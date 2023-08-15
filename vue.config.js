@@ -21,14 +21,18 @@ module.exports = {
     },
     proxy: {
       'api': {
-        // target: 'http://192.168.130.28:6099/base',
-        // target: 'http://192.168.35.181:6009/base',
-        // target: 'http://localhost:6009/base',
-        target: 'http://192.168.169.181:6099/base',
-        // target: 'http://172.168.0.203:6009/base',
+        // target: 'http://192.168.169.181:6099/base',
+        target: 'http://192.168.169.28:6099/base',
         ws: true,
         pathRewrite: {
           '^/api': '/'
+        }
+      },
+      'dict': {
+        target: 'http://192.168.169.28:8089/ai',
+        ws: true,
+        pathRewrite: {
+          '^/dict': '/'
         }
       }
     }

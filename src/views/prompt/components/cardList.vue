@@ -3,11 +3,24 @@
     <div class="card" v-for="(item, i) in cardList" :key="i" @click="cardClick(item)">
       <div class="cardHead">
         <div class="cardTitle">{{ item.templateName }}</div>
-        <SvgIcon :icon-class="item.isCollect ? `collected` : `collect`" class="iconStyle" @click.native.stop="collectClick(item)" />
+        <div>
+          <SvgIcon :icon-class="item.isCollect === '是' ? `collected` : `collect`" class="iconStyle" @click.native.stop="collectClick(item)" />
+          <a-dropdown v-if="type === 'self'">
+            <SvgIcon icon-class="more" @click.native.stop="e => e.preventDefault()" />
+              <a-menu slot="overlay">
+                <a-menu-item>
+                  <div @click="editPropmt(item)">编辑</div>
+                </a-menu-item>
+                <a-menu-item>
+                  <div @click="deletePrompt(item)">删除</div>
+                </a-menu-item>
+              </a-menu>
+          </a-dropdown>
+        </div>
       </div>
       <div class="cardContent">{{ item.templateContent }}</div>
       <div class="labelList">
-        <a-tag v-for="(e, i) in item.labelList" :key="i">{{ e }}</a-tag>
+        <a-tag v-for="(e, i) in item.labels" :key="i">{{ e.labelName }}</a-tag>
       </div>
     </div>
     <div style="display: flex;justify-content: flex-end;width: 100%;">
@@ -26,7 +39,9 @@
         </template>
       </a-pagination>
     </div>
+    
 
+    <!-- 详情 -->
     <a-modal
       title="查看Prompt模板"
       v-model="detailsPromptVisible"
@@ -50,26 +65,27 @@
 
           <el-col :span="12">
             <el-form-item label="模板来源：">
-              <p class="labelContent">{{ detailsPrompt.templateName }}</p>
+              <p class="labelContent">{{ detailsPrompt.templateType }}</p>
             </el-form-item>
           </el-col>
 
         </el-row>
 
         <el-form-item label="创建时间：">
-          <p class="labelContent">{{ detailsPrompt.templateName }}</p>
+          <p class="labelContent">{{ detailsPrompt.optTime }}</p>
         </el-form-item>
 
         <el-form-item label="模板标签：">
-          <p class="labelContent">{{ detailsPrompt.templateName }}</p>
+          <p class="labelContent">{{ detailsPrompt.labels }}</p>
         </el-form-item>
         
         <el-form-item label="模板内容：">
           <p class="labelContent">{{ detailsPrompt.templateContent }}</p>
+          <p style="font-size: 12px;">变量：{{ detailsPrompt.variableName }}</p>
         </el-form-item>
 
         <el-form-item label="接口地址：">
-          <p class="labelContent">{{ detailsPrompt.templateName }}</p>
+          <p class="labelContent">{{ detailsPrompt.serviceInterface }}</p>
         </el-form-item>
 
       </el-form>
@@ -77,40 +93,33 @@
   </div>
 </template>
 <script>
+
 import SvgIcon from '@/components/SvgIcon.vue';
+
+import {
+  selectDetailById,
+  collect,
+  cacelCollect
+} from '@/api/prompt';
 export default {
   name: 'CardList',
+  props: {
+    cardList: {
+      type: Array,
+      default() {
+        return []
+      }
+    },
+    type: {
+      type: String,
+      defatult: "",
+    }
+  },
   components: {
     SvgIcon
   },
   data() {
     return {
-      cardList: [
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-        { templateName: "电影评论", isCollect: false, templateContent: "我希望你充当一个电影评论家。你将编写一篇引人入胜和有创意的影评。你可以涵盖诸如情节、主题和基调、演技和角色、方向、配乐、电影摄影、制作设计、特效、剪辑、节奏、对话等主题。但最重要的方面是强调电影给你的感觉。什么是真正引起你的共鸣。你也可以对电影进行批评。请避免剧透。电影名称是{content}", labelList: ["写作", "写作", "写作"]},
-      ],
       total: 100,
       pageNo: 1,
       pageSize: 24,
@@ -126,15 +135,42 @@ export default {
 
   methods: {
 
-    // 收藏
+    // 收藏or取消收藏
     collectClick(item) {
-      item.isCollect = !item.isCollect;
+      if(item.isCollect === '否') {  // 收藏
+        item.isCollect = '是';
+        collect({ templateId: item.templateId }).then(res => {
+          if(res.data.status === 1){
+            this.$emit("getData");
+          }
+        })
+      } else {                       // 取消收藏
+        item.isCollect = '否';
+        cacelCollect({ templateId: item.templateId }).then(res => {
+          if(res.data.status === 1){
+            this.$emit("getData");
+          }
+        })
+      }
     },
 
     // 模板点击
     cardClick(item) {
-      this.detailsPrompt = JSON.parse(JSON.stringify(item));
       this.detailsPromptVisible = true;
+      selectDetailById({ templateId: item.templateId }).then(res => {
+        this.detailsPrompt = res.data.data;
+        this.detailsPrompt.labels = this.detailsPrompt.labels.map(e => e.labelName).join('、');
+      })
+    },
+
+    // 编辑
+    editPropmt(item) {
+      this.$emit("transOperation", { type: 'edit', params: item });
+    },
+
+    // 删除
+    deletePrompt(item) {
+      this.$emit("transOperation", { type: 'delete', params: item });
     },
 
     // 分页
@@ -173,13 +209,16 @@ export default {
       align-items: center;
       justify-content: space-between;
       .iconStyle {
+        margin-right: 10px;
         &:hover {
           cursor: pointer;
         }
       }
     }
     .cardContent {
+      height: 65px;
       padding: 0 15px;
+      margin-bottom: 10px;
       overflow: hidden;
       text-overflow: ellipsis;
       display: -webkit-box;
@@ -187,7 +226,13 @@ export default {
       -webkit-box-orient: vertical;
     }
     .labelList {
-      padding: 10px 15px;
+      padding: 0 15px;
+      height: 22px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
     }
   }
 }
