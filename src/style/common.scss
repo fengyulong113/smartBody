@@ -1,0 +1,46 @@
+
+
+// 滚动条
+::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  border: 1px solid #7f8da5;
+  background-color: #5a6b89;
+}
+
+
+.dialog-header {
+  height: 40px;
+  line-height: 40px;
+  color: #B0C5DF;
+  font-size: 16px;
+  user-select: none;
+}
+.dialog-body {
+  padding: 20px;
+  color: #B0C5DF;
+  user-select: none;
+  text-align: center;
+}
+.dialog-footer {
+  text-align: center;
+}
+.iconStyle {
+  font-size: 16px;
+  margin-right: 5px;
+}
+
+span {
+  user-select: none;
+  color: #fff; 
+}
+.color-blue {
+  color: #0993EC;
+}
+.color-w {
+  color: #B0C5DF;
+}
