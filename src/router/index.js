@@ -6,7 +6,8 @@ import BigModel from '../views/bigModel.vue';
 import SmallModel from  '../views/smallModel.vue';
 import DataSet from '../views/dataSet.vue';
 import Script from '../views/script.vue';
-import Prompt from '../views/prompt/index.vue'
+import Prompt from '../views/prompt/index.vue';
+import AiModel from '../views/aiModel/index.vue';
 
 Vue.use(VueRouter)
 
@@ -44,6 +45,11 @@ const routes = [
     path: "/prompt",
     name: "prompt",
     component: Prompt
+  },
+  {
+    path: "/aiModel",
+    name: "aiModel",
+    component: AiModel
   },
 ]
 
