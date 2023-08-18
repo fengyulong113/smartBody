@@ -20,12 +20,11 @@ module.exports = {
       errors: true
     },
     proxy: {
-      'api': {
-        // target: 'http://192.168.169.181:6099/base',
+      'base': {
         target: 'http://192.168.169.28:6099/base',
         ws: true,
         pathRewrite: {
-          '^/api': '/'
+          '^/base': '/'
         }
       },
       'dict': {

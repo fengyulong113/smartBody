@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const selectFileListByFileCategory = (params) => {
   return fetch({
-    url: 'api/selectFileListByFileCategory',
+    url: 'base/selectFileListByFileCategory',
     method: 'get',
     params
   })
@@ -11,13 +11,13 @@ export const selectFileListByFileCategory = (params) => {
 
 export const download = (params) => {
   return fetch({
-    url: 'api/download',
+    url: 'base/download',
     method: 'get',
     responseType: 'blob',
     params
   })
 }
 
-export const uploadSingleForeignId = (params) => axios.post(`api/uploadSingleForeignId`, params)
+export const uploadSingleForeignId = (params) => axios.post(`base/uploadSingleForeignId`, params)
 
-export const uploadBatchForeignId = (params) => axios.post(`api/uploadBatchForeignId`, params)
+export const uploadBatchForeignId = (params) => axios.post(`base/uploadBatchForeignId`, params)

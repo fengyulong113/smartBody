@@ -8,6 +8,7 @@ import DataSet from '../views/dataSet.vue';
 import Script from '../views/script.vue';
 import Prompt from '../views/prompt/index.vue';
 import AiModel from '../views/aiModel/index.vue';
+import ModelsDetail from '../views/aiModel/modelsDetail.vue';
 
 Vue.use(VueRouter)
 
@@ -50,6 +51,11 @@ const routes = [
     path: "/aiModel",
     name: "aiModel",
     component: AiModel
+  },
+  {
+    path: "/modelsDetail",
+    name: "modelsDetail",
+    component: ModelsDetail
   },
 ]
 

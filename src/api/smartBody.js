@@ -2,7 +2,7 @@ import fetch from "./axios";
 
 export const getSmartBody = (data) => {
   return fetch({
-    url: 'api/smartAgent/selectByConditions',
+    url: 'base/smartAgent/selectByConditions',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export const getSmartBody = (data) => {
 
 export const getSmartBodyDetail = (params) => {
   return fetch({
-    url: 'api/smartAgent/selectSmartAgentDetail',
+    url: 'base/smartAgent/selectSmartAgentDetail',
     method: 'get',
     params
   })
@@ -18,7 +18,7 @@ export const getSmartBodyDetail = (params) => {
 
 export const addSmartBody = (data) => {
   return fetch({
-    url: 'api/smartAgent/insertSmartAgent',
+    url: 'base/smartAgent/insertSmartAgent',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export const addSmartBody = (data) => {
 
 export const editSmartBody = (data) => {
   return fetch({
-    url: 'api/smartAgent/updateByModelId',
+    url: 'base/smartAgent/updateByModelId',
     method: 'post',
     data
   })
@@ -34,7 +34,7 @@ export const editSmartBody = (data) => {
 
 export const deleteSmartBody = (params) => {
   return fetch({
-    url: 'api/smartAgent/deleteByModelId',
+    url: 'base/smartAgent/deleteByModelId',
     method: 'get',
     params
   })
@@ -42,7 +42,7 @@ export const deleteSmartBody = (params) => {
 
 export const selectFieldValues = (params) => {
   return fetch({
-    url: 'api/smartAgent/selectFieldValues',
+    url: 'base/smartAgent/selectFieldValues',
     method: 'get',
     params
   })
