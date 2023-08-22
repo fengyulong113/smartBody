@@ -21,10 +21,17 @@ module.exports = {
     },
     proxy: {
       'base': {
-        target: 'http://192.168.169.28:6099/base',
+        target: 'http://192.168.169.181:6099/base',
         ws: true,
         pathRewrite: {
           '^/base': '/'
+        }
+      },
+      'script': {
+        target: 'http://192.168.169.181:6010',
+        ws: true,
+        pathRewrite: {
+          '^/script': '/'
         }
       },
       'dict': {

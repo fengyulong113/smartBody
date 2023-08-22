@@ -6,7 +6,7 @@
         <div class="aiModelTopInfo">
           <div class="aiModelTopInfoTitle">模型库 Models</div>
           <div class="aiModelTopInfoDesc">
-            包含计算机视觉、自然语言处理、智能语音、文心大模型、科学计算、量子计算等任务方向算法，覆盖智慧金融、智慧安防、智慧工业/能源、智慧城市、智慧交通等多行业场景范例
+            包含计算机视觉、自然语言处理、文心大模型等任务方向算法，覆盖通用，军事领域等场景范例
           </div>
         </div>
 
@@ -25,23 +25,17 @@
       <div class="aiModelContent">
 
         <div class="aiModelLeft">
-          <div class="aiModelLeftItem">
+          <div class="aiModelLeftItem" v-for="(item, i) in labelList" :key="i">
             <div class="aiModelLeftItemTitle">
-              模型类型
+              {{ item.title }}
             </div>
             <div class="aiModelLeftItemContent">
               <a-radio-group v-model="modelType">
-                <a-radio-button value="a">
-                  Hangzhou
-                </a-radio-button>
-                <a-radio-button value="b">
-                  Shanghai
-                </a-radio-button>
-                <a-radio-button value="c">
-                  Beijing
-                </a-radio-button>
-                <a-radio-button value="d">
-                  Chengdu
+                <a-radio-button
+                  v-for="(e, i) in item.labelVals"
+                  :key="i"
+                  :value="e">
+                  {{ e }}
                 </a-radio-button>
               </a-radio-group>
             </div>
@@ -52,6 +46,9 @@
 
           <div class="aiModelListHeader">
             <div class="aiModelListHeaderTitle">模型列表</div>
+            <div class="aiModelListHeaderCreate">
+              <a-button @click="createModel" style="height: 100%;font-size: 13px;color: #2b32d8;" type="link">创建模型</a-button>
+            </div>
             <div class="aiModelListHeaderTatalCount">
               共{{ '100' }}个结果
             </div>
@@ -88,23 +85,17 @@
                   </div>
 
                   <div class="aiModelListWapperCardRightBolongto">
-                    <a-radio-button>
-                      Hangzhou
-                    </a-radio-button>
-                    <a-radio-button>
-                      Shanghai
-                    </a-radio-button>
-                    <a-radio-button>
-                      Beijing
+                    <a-radio-button v-for="(e, i) in item.labels" :key="e">
+                      {{ e }}
                     </a-radio-button>
                     <a-popover>
                       <template slot="content">
                         <div style="display: flex;">
                           <a-radio-button>
-                            Chengdu
+                            目标检测
                           </a-radio-button>
                           <a-radio-button>
-                            Chengdu
+                            图像分割
                           </a-radio-button>
                         </div>
                       </template>
@@ -119,12 +110,10 @@
                   </div>
 
                   <div class="aiModelListWapperCardRightDetail">
-                    <SvgIcon icon-class="dot" />
-                    <span class="aiModelListWapperCardRightDetailTrain">支持训练</span>
-                    <SvgIcon icon-class="dot" />
-                    <span class="aiModelListWapperCardRightDetailTrain">在线体验</span>
-                    <SvgIcon icon-class="dot" />
-                    <span class="aiModelListWapperCardRightDetailTrain">支持PaddleX</span>
+                    <div v-for="(e, i) in item.selects" :key="i">
+                      <SvgIcon icon-class="dot" />
+                      <span class="aiModelListWapperCardRightDetailTrain">{{ e }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -154,15 +143,51 @@ export default {
         { label: "在线体验", value: "在线体验"},
         { label: "支持PaddleX", value: "支持PaddleX"},
       ],
-      selectValue: "",
+      selectValue: "综合排序",
       selectList: ["综合排序","按更新时间","按点赞数","按浏览量"],
       cardList: [
-        { id: 1, name: '通用多目3D目标检测', desc: "通用多目3D目标检测"},
-        { id: 2, name: '通用多目3D目标检测', desc: "通用多目3D目标检测"},
-        { id: 3, name: '通用多目3D目标检测', desc: "通用多目3D目标检测"},
-        { id: 4, name: '通用多目3D目标检测', desc: "通用多目3D目标检测"},
-        { id: 5, name: '通用多目3D目标检测', desc: "通用多目3D目标检测"},
-        { id: 6, name: '通用多目3D目标检测', desc: "通用多目3D目标检测"},
+        { id: 1, 
+          name: 'ERNIE-VILG', 
+          desc: "文心知识增强跨模态图文生成大模型", 
+          labels: ['基础模型', '文心大模型', '图文生成', '跨模态'],
+          // selects: ['支持训练', '在线体验', '支持PaddleX'],
+        },
+        { id: 2, 
+          name: 'ERNIE 3.0', 
+          desc: "ERNIE 3.0 轻量级模型", 
+          labels: ['基础模型', '预训练模型', '自然语言处理'],
+          selects: ['支持训练'],
+        },
+        { id: 3, 
+          name: 'PP-LCNetv2', 
+          desc: "面向Intel CPU端的轻量级卷积神经网络", 
+          labels: ['图像分类', '基础模型', '计算机视觉'],
+          selects: ['支持训练', '支持体验'],
+        },
+        { id: 4, 
+          name: 'ResNet50', 
+          desc: "ResNet50是图像分类模型", 
+          labels: ['图像分类', '基础模型', '计算机视觉'],
+          selects: ['支持训练', '支持体验', '支持PaddleX'],
+        },
+        { id: 5, 
+          name: 'PP-ChatOCR', 
+          desc: "PP-ChatOCR是一款结合PP-OCR和文心大模型的应用，致力于实现从图片到关键信息抽取的端到端体验，适用于所有通用场景。", 
+          labels: ['关系抽取', '产业方案', '计算机视觉'],
+          selects: ['支持体验', '支持PaddleX'],
+        },
+        { id: 6, 
+          name: 'PP-TTS', 
+          desc: "飞桨开源流式语音合成系统", 
+          labels: ['语音合成', '基础模型', '智能语音'],
+          selects: ['支持体验', '支持体验'],
+        },
+      ],
+      modelTypeList: ['图像分类', '文字识别', '目标检测'],
+      labelList: [
+        { title: '模型类型', labelVals: ['基础模型', '产业方案', '创意工坊'] },
+        { title: '任务类型', labelVals: ['图像分类', '目标检测', '图像分割', '文字识别', '预训练模型', '关系抽取', '图文生成', '语音识别', '语音合成'] },
+        { title: '数据集类型', labelVals: ['lmageNet1k', 'ICDAR2017-RCTW-17', 'Kinetics-400', 'LibriSpeech', 'Aishell3', 'MSCOCO', 'ADE20K', 'RCSB PDB', 'Aliproduct', 'GLDv2'] },
       ]
     };
   },
@@ -183,6 +208,13 @@ export default {
         query: { modelId: item.id }
       });
       console.log(routeData)
+      window.open(routeData.href, "_blank");
+    },
+
+    createModel() {
+      let routeData = this.$router.resolve({
+        path: '/createModel'
+      });
       window.open(routeData.href, "_blank");
     }
   },
@@ -257,7 +289,7 @@ export default {
       display: flex;
       .aiModelTopSearch {
         flex: 1;
-        height: 52px;
+        height: 60px;
         .aiModelTopSearchInput {
           padding: 11px 20px !important;
           border-radius: 0 !important;
@@ -349,10 +381,14 @@ export default {
         line-height: 26px;
         font-weight: 500;
       }
+      .aiModelListHeaderCreate {
+        height: 28px;
+        line-height: 28px;
+      }
       .aiModelListHeaderTatalCount {
         flex-grow: 1;
         height: 22px;
-        margin-left: 20px;
+        // margin-left: 20px;
         width: fit-content;
         font-family: PingFangSC-Regular;
         font-size: 14px;

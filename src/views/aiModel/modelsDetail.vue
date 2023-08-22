@@ -122,7 +122,7 @@ export default {
   data() {
     return {
       activeId: "",
-      tagsLsit: ["xxx", "xxx", "xxxx", "xxx"],
+      tagsLsit: ["目标识别", "图像分割", "文字识别", "语音识别"],
       branchVal: 'master',
       isShowFileContent: false,
       options: {
@@ -134,7 +134,7 @@ export default {
         // displayIndentGuides: false,
       },
       jsCode: "function fn() {\n  console.log('xxx')\n}",
-      markdown: "# Hello World\n## test Code\n```js\nfunction fn() {\n  console.log('xxx')\n}\n```",
+      markdown: "# 1. PP-OCRv3模型简介\n ### PP-OCRv3在PP-OCRv2的基础上进一步升级。整体的框架图保持了与PP-OCRv2相同的pipeline，针对检测模型和识别模型进行了优化。其中，检测模块仍基于DB算法优化，而识别模块不再采用CRNN，换成了IJCAI 2022最新收录的文本识别算法SVTR，并对其进行产业适配。PP-OCRv3系统框图如下所示（粉色框中为PP-OCRv3新增策略）\n ### 从算法改进思路上看，分别针对检测和识别模型，进行了共9个方面的改进",
       columns: [
         { 
           dataIndex: "fileName", 
@@ -164,8 +164,11 @@ export default {
         },
       ],
       fileData: [
-        { fileName: 'fyl.md', size: '1023kb', commit: 'first cm', lately: '1 months ago' },
-        { fileName: 'fyl.md', size: '1023kb', commit: 'first cm', lately: '1 months ago' },
+        { fileName: 'app.py', size: '1023kb', commit: 'first cm', lately: '1 months ago' },
+        { fileName: 'target.py', size: '1023kb', commit: 'first cm', lately: '1 months ago' },
+        { fileName: 'result.py', size: '70kb', commit: 'first cm', lately: '1 months ago' },
+        { fileName: 'config.js', size: '489kb', commit: 'first cm', lately: '1 months ago' },
+        { fileName: 'readme.md', size: '688kb', commit: 'first cm', lately: '1 months ago' },
       ],
     };
   },
