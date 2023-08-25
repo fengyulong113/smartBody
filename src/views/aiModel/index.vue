@@ -14,7 +14,7 @@
           <div class="aiModelTopSearch">
             <a-form-item style="row-gap: 0px;">
               <div class="aiModelTopSearchInput">
-                <a-input-search size="large" placeholder="请输入模型名称" @search="onSearch" />
+                <a-input-search size="large" v-model="modelName" placeholder="请输入模型名称" @search="search" />
               </div>
             </a-form-item>
           </div>
@@ -25,21 +25,60 @@
       <div class="aiModelContent">
 
         <div class="aiModelLeft">
-          <div class="aiModelLeftItem" v-for="(item, i) in labelList" :key="i">
-            <div class="aiModelLeftItemTitle">
-              {{ item.title }}
-            </div>
-            <div class="aiModelLeftItemContent">
-              <a-radio-group v-model="modelType">
+          <a-tabs default-active-key="1" @change="tabsChange">
+            <a-tab-pane key="1" tab="标签">
+              <div v-if="categoryForm.modelLabel !== ''" class="clearChoose">
+                <a-button type="link" size="small" @click="categoryForm.modelLabel = ''">清除选中</a-button>
+              </div>
+              <a-radio-group v-model="categoryForm.modelLabel">
                 <a-radio-button
-                  v-for="(e, i) in item.labelVals"
+                  v-for="(e, i) in dictionary.model_label"
                   :key="i"
-                  :value="e">
-                  {{ e }}
+                  :value="e.value">
+                  {{ e.text }}
                 </a-radio-button>
               </a-radio-group>
-            </div>
-          </div>
+            </a-tab-pane>
+            <a-tab-pane
+              v-for="(item, i) in categotyList"
+              :key="item.id" 
+              :tab="item.name">
+              <div v-if="categoryForm.modelLibrary !== ''" class="clearChoose">
+                <a-button type="link" size="small" @click="categoryForm.modelLibrary = ''">清除选中</a-button>
+              </div>
+              <a-radio-group v-if="subCategroy.level < 2" v-model="categoryForm.modelLibrary">
+                <a-radio-button
+                  v-for="(e, i) in subCategroy.data"
+                  :key="i"
+                  :value="e.name">
+                  {{ e.name }}
+                </a-radio-button>
+              </a-radio-group>
+              
+              <div v-else>
+                <div v-if="categoryForm.modelTask !== ''" class="clearChoose">
+                  <a-button type="link" size="small" @click="categoryForm.modelTask = ''">清除选中</a-button>
+                </div>
+                <div class="aiModelLeftItem" v-for="(item, i) in subCategroy.data" :key="i">
+                  <div class="aiModelLeftItemTitle">
+                    {{ item.name }}
+                  </div>
+                  <div v-if="item.childData && item.childData.length > 0" class="aiModelLeftItemContent">
+                    <a-radio-group v-model="categoryForm.modelTask">
+                      <a-radio-button
+                        v-for="(e, i) in item.childData"
+                        :key="i"
+                        :value="e.name">
+                        {{ e.name }}
+                      </a-radio-button>
+                    </a-radio-group>
+                  </div>
+                </div>
+              </div>
+
+            </a-tab-pane>
+          </a-tabs>
+          
         </div>
 
         <div class="aiModelList">
@@ -50,52 +89,36 @@
               <a-button @click="createModel" style="height: 100%;font-size: 13px;color: #2b32d8;" type="link">创建模型</a-button>
             </div>
             <div class="aiModelListHeaderTatalCount">
-              共{{ '100' }}个结果
+              共{{ total }}个结果
             </div>
             <div class="aiModelListHeaderFunc">
               <a-checkbox-group
                 v-model="checkboxValue"
                 name="checkboxgroup"
                 :options="plainOptions"
-                @change="checkboxChange"
                 style="margin-right: 10px"
               />
-              <a-select 
-                v-model="selectValue"
-                style="width: 150px"
-              >
-                <a-select-option 
-                  v-for="(item, i) in selectList" 
-                  :key="i"
-                  :value="item"
-                  >
-                  {{ item }}
-                </a-select-option>
-              </a-select>
             </div>
           </div>
 
           <div class="aiModelListWapper">
-            <div class="aiModelListWapperCardcontainer" @click="modelClick(item)" v-for="(item, i) in cardList" :key="i">
+            <div class="aiModelListWapperCardcontainer" @click="modelClick(item)" v-for="(item, i) in modelList" :key="i">
               <div class="aiModelListWapperCard">
                 <div class="aiModelListWapperCardRight">
 
                   <div class="aiModelListWapperCardRightTop">
-                    <div class="aiModelListWapperCardRightName">{{ item.name }}</div>
+                    <div class="aiModelListWapperCardRightName">{{ item.modelName }}</div>
                   </div>
 
                   <div class="aiModelListWapperCardRightBolongto">
-                    <a-radio-button v-for="(e, i) in item.labels" :key="e">
+                    <a-radio-button v-for="(e, i) in item.labels.slice(0, 3)" :key="i">
                       {{ e }}
                     </a-radio-button>
-                    <a-popover>
+                    <a-popover v-if="item.labels.length > 3">
                       <template slot="content">
                         <div style="display: flex;">
-                          <a-radio-button>
-                            目标检测
-                          </a-radio-button>
-                          <a-radio-button>
-                            图像分割
+                          <a-radio-button v-for="(e, i) in item.labels.slice(3)" :key="i">
+                            {{ e }}
                           </a-radio-button>
                         </div>
                       </template>
@@ -106,20 +129,35 @@
                   </div>
 
                   <div class="aiModelListWapperCardRightDesc">
-                    {{ item.desc }}
+                    {{ item.modelDesc }}
                   </div>
 
                   <div class="aiModelListWapperCardRightDetail">
-                    <div v-for="(e, i) in item.selects" :key="i">
+                    <div v-if="item.isOnlineUse !== '否'">
                       <SvgIcon icon-class="dot" />
-                      <span class="aiModelListWapperCardRightDetailTrain">{{ e }}</span>
+                      <span class="aiModelListWapperCardRightDetailTrain">在线体验</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="aiModelListPagination"></div>
+          <div class="aiModelListPagination">
+            <a-pagination
+              show-size-changer
+              v-model="pageNo"
+              :page-size="pageSize"
+              :default-current="1"
+              :page-size-options="pageSizeOptions"
+              :total="total"
+              style="line-height: 3.5"
+              @change="currentChange"
+              @showSizeChange="showSizeChange">
+              <template slot="buildOptionText" slot-scope="props">
+                <span style="color: #000">{{ props.value }}条/页</span>
+              </template>
+            </a-pagination>
+          </div>
         </div>
       </div>
     </a-form>
@@ -128,7 +166,15 @@
 
 <script>
 import SvgIcon from '@/components/SvgIcon.vue';
-
+import { mapGetters } from 'vuex';
+import {
+  selectByConditions,
+  insertModel,
+} from '@/api/aiModel'
+import {
+  getRootList,
+  getChildList
+} from '../../api/dictionary'
 export default {
   name: 'AiModel',
   components: {
@@ -136,71 +182,118 @@ export default {
   },
   data() {
     return {
-      modelType: "",
+      categotyList: [],
+      subCategroy: {},
+      categoryForm: {
+        modelLabel: "",
+        modelTask: "",
+        modelLibrary: "",
+        modelLanguage: "",
+      },
+      modelName: "",
+      modelList: [],
+      total: 0,
       checkboxValue: [],
+      pageSizeOptions: ['20', '40', '60', '80'],
+      pageNo: 1,
+      pageSize: 20,
       plainOptions: [
-        { label: "支持训练", value: "支持训练"},
         { label: "在线体验", value: "在线体验"},
-        { label: "支持PaddleX", value: "支持PaddleX"},
       ],
-      selectValue: "综合排序",
-      selectList: ["综合排序","按更新时间","按点赞数","按浏览量"],
-      cardList: [
-        { id: 1, 
-          name: 'ERNIE-VILG', 
-          desc: "文心知识增强跨模态图文生成大模型", 
-          labels: ['基础模型', '文心大模型', '图文生成', '跨模态'],
-          // selects: ['支持训练', '在线体验', '支持PaddleX'],
-        },
-        { id: 2, 
-          name: 'ERNIE 3.0', 
-          desc: "ERNIE 3.0 轻量级模型", 
-          labels: ['基础模型', '预训练模型', '自然语言处理'],
-          selects: ['支持训练'],
-        },
-        { id: 3, 
-          name: 'PP-LCNetv2', 
-          desc: "面向Intel CPU端的轻量级卷积神经网络", 
-          labels: ['图像分类', '基础模型', '计算机视觉'],
-          selects: ['支持训练', '支持体验'],
-        },
-        { id: 4, 
-          name: 'ResNet50', 
-          desc: "ResNet50是图像分类模型", 
-          labels: ['图像分类', '基础模型', '计算机视觉'],
-          selects: ['支持训练', '支持体验', '支持PaddleX'],
-        },
-        { id: 5, 
-          name: 'PP-ChatOCR', 
-          desc: "PP-ChatOCR是一款结合PP-OCR和文心大模型的应用，致力于实现从图片到关键信息抽取的端到端体验，适用于所有通用场景。", 
-          labels: ['关系抽取', '产业方案', '计算机视觉'],
-          selects: ['支持体验', '支持PaddleX'],
-        },
-        { id: 6, 
-          name: 'PP-TTS', 
-          desc: "飞桨开源流式语音合成系统", 
-          labels: ['语音合成', '基础模型', '智能语音'],
-          selects: ['支持体验', '支持体验'],
-        },
-      ],
-      modelTypeList: ['图像分类', '文字识别', '目标检测'],
-      labelList: [
-        { title: '模型类型', labelVals: ['基础模型', '产业方案', '创意工坊'] },
-        { title: '任务类型', labelVals: ['图像分类', '目标检测', '图像分割', '文字识别', '预训练模型', '关系抽取', '图文生成', '语音识别', '语音合成'] },
-        { title: '数据集类型', labelVals: ['lmageNet1k', 'ICDAR2017-RCTW-17', 'Kinetics-400', 'LibriSpeech', 'Aishell3', 'MSCOCO', 'ADE20K', 'RCSB PDB', 'Aliproduct', 'GLDv2'] },
-      ]
     };
   },
 
   mounted() {
-    
+    this.search();
+    this.getCategotyData()
   },
-
+  computed: {
+    ...mapGetters(['dictionary'])
+  },
+  watch: {
+    categoryForm: {
+      handler(val) {
+        this.search();
+      },
+      deep: true
+    },
+    checkboxValue: {
+      handler(val) {
+        this.search();
+      }
+    }
+  },
   methods: {
-    onSearch() {},
+    search() {
+      const params = {
+        isOnlineUse: this.checkboxValue.includes('在线体验') ? '是' : '',
+        labels: this.categoryForm.modelLabel,
+        modelLibrary: this.categoryForm.modelLibrary,
+        modelName: this.modelName,
+        modelTask: this.categoryForm.modelTask,
+        pageNo: this.pageNo,
+        pageSize: this.pageSize
+      }
+      selectByConditions(params).then(res => {
+        this.modelList = res.data.data.list;
+        this.total = res.data.data.total;
+      })
+    },
 
-    checkboxChange() {},
+    getCategotyData() {
+      const params = {
+        column: "createTime",
+        order: "desc",
+        filed: "id, name",
+        pageNo: 1,
+        pageSize: 200
+      }
+      getRootList(params).then(res => {
+        this.categotyList = res.data.result.records;
+      })
+    },
 
+    // 标签页更改
+    tabsChange(key) {
+      if(key !== 1) {
+        const params = {
+          pid: key,
+          column: "createTime",
+          order: "desc",
+          filed: "id, name",
+          pageNo: 1,
+          pageSize: 200
+        }
+        getChildList(params).then(res => {
+          res = res.data.result;
+          if(res.every((item) =>  item.hasChild === '1')) {
+            res.forEach((record) => {
+              getChildList({ 
+                pid: record.id,
+                column: "createTime",
+                order: "desc",
+                filed: "id, name",
+                pageNo: 1,
+                pageSize: 200
+              }).then(r => {
+                record.childData = r.data.result;
+                this.subCategroy = {
+                  data: res,
+                  level: 2
+                };
+              })
+            })
+          } else {
+            this.subCategroy = {
+              data: res,
+              level: 1
+            };
+          }
+        })
+      }
+    },
+
+    // 模型点击
     modelClick(item) {
       console.log(item)
       let routeData = this.$router.resolve({
@@ -216,7 +309,20 @@ export default {
         path: '/createModel'
       });
       window.open(routeData.href, "_blank");
-    }
+    },
+
+
+    // 分页
+    showSizeChange(pageNo, pageSize) {
+      this.pageSize = pageSize;
+      this.pageNo = pageNo;
+      this.search()
+    },
+    currentChange(pageNo, pageSize) {
+      this.pageSize = pageSize;
+      this.pageNo = pageNo;
+      this.search()
+    },
   },
 };
 </script>
@@ -327,6 +433,11 @@ export default {
       min-height: 1093px;
       margin-right: 70px;
       position: relative;
+      .clearChoose {
+        height: 30px;
+        line-height: 30px;
+        text-align: right;
+      }
       .aiModelLeftItem {
         box-sizing: border-box;
         .aiModelLeftItemTitle {
@@ -536,5 +647,7 @@ export default {
     }
   }
 }
-
+/deep/ .ant-tabs-nav .ant-tabs-tab {
+  padding: 17px 0 17px;
+}
 </style>

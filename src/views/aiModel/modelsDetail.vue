@@ -10,13 +10,13 @@
             <span>模型详情</span>
           </a-breadcrumb-item>
         </a-breadcrumb>
-        <div class="aiModelDetailHdTitle">PP-OCRv3</div>
+        <div class="aiModelDetailHdTitle">{{ modelObj.modelName }}</div>
         <div class="aiModelDetailHdSubtitle">
-          <div class="modelDesc">PP-OCRv3文字检测识别系统</div>
+          <div class="modelDesc">{{ modelObj.modelDesc }}</div>
           <a-divider type="vertical" />
-          <div>4511次调用</div>
+          <div>{{ modelObj.optUser }}</div>
           <a-divider type="vertical" />
-          <div>2022-11-28 20:13:40</div>
+          <div>{{ modelObj.modelCreateTime }}</div>
         </div>
         <div class="aiModelDetailHdTags">
           <a-radio-button
@@ -42,15 +42,15 @@
                     <a-select-option value="master">master</a-select-option>
                   </a-select>
                   <a-breadcrumb>
-                    <a-breadcrumb-item>
-                      <span>PP-OCRv3</span>
+                    <a-breadcrumb-item  v-for="(item,i) in crumbList" :key="i">
+                      <span style="cursor: pointer;" @click="returnFlod(item)">{{ item.name }}</span>
                     </a-breadcrumb-item>
                     <a-breadcrumb-item>
                       <span> </span>
                     </a-breadcrumb-item>
                   </a-breadcrumb>
                 </div>
-                <div class="aiModelDetailSpaceDownload">
+                <div class="aiModelDetailSpaceDownload" @click="handleDownLoadFile">
                   <SvgIcon icon-class="download" />
                   下载模型demo
                 </div>
@@ -73,8 +73,11 @@
                 :pagination="false" 
                 :showHeader="false"
               >
-                <template slot="fileName" slot-scope="text, record">
-                  <div style="cursor: pointer;" @click="fileClick(record)">{{ text }}</div>
+                <template slot="name" slot-scope="text, record">
+                  <div style="display: flex;align-items: center;cursor: pointer" @click="fileClick(record)">
+                    <a-icon :type="record.type === 'BLOB' ? 'file' : 'folder-open'" style="margin-right: 5px;"></a-icon>
+                    <div>{{ text }}</div>
+                  </div>
                 </template>
                 <span slot="action" slot-scope="text, record">
                   <a-button type="link" @click="fileClick(record)">查看</a-button>
@@ -84,7 +87,7 @@
               <div v-else>
                 <AceEditor
                   :mode="'javascript'"
-                  :value="jsCode"
+                  :value="fileCode"
                   :theme="'github'"
                   :displayIndentGuides="false"
                   :options="options"
@@ -96,7 +99,15 @@
             </div>
           </a-tab-pane>
           <a-tab-pane key="download" tab="模型下载">
-            模型下载
+            <a-table
+              :columns="versionColumns"
+              :data-source="modelObj.versions"
+              :pagination="false"
+            >
+              <span slot="action" slot-scope="text, record">
+                <a-button type="link" @click="downLoad(record)">下载</a-button>
+              </span>
+            </a-table>
           </a-tab-pane>
         </a-tabs>
       </div>
@@ -112,6 +123,14 @@ import AceEditor from 'vue2-ace-editor'
 import 'brace/theme/monokai'
 import 'brace/theme/github'
 import 'brace/theme/chrome'
+
+import {
+  selectModelDetail,
+  getModelCodeFile,
+  getCodeFileContent,
+  downloadFile,
+  download
+} from '@/api/aiModel'
 export default {
   name: 'ModelsDetail',
   components: {
@@ -122,7 +141,9 @@ export default {
   data() {
     return {
       activeId: "",
-      tagsLsit: ["目标识别", "图像分割", "文字识别", "语音识别"],
+      modelObj: {},
+      tagsLsit: [],
+      crumbList: [],
       branchVal: 'master',
       isShowFileContent: false,
       options: {
@@ -133,29 +154,14 @@ export default {
         highlightActiveLine: false,
         // displayIndentGuides: false,
       },
-      jsCode: "function fn() {\n  console.log('xxx')\n}",
-      markdown: "# 1. PP-OCRv3模型简介\n ### PP-OCRv3在PP-OCRv2的基础上进一步升级。整体的框架图保持了与PP-OCRv2相同的pipeline，针对检测模型和识别模型进行了优化。其中，检测模块仍基于DB算法优化，而识别模块不再采用CRNN，换成了IJCAI 2022最新收录的文本识别算法SVTR，并对其进行产业适配。PP-OCRv3系统框图如下所示（粉色框中为PP-OCRv3新增策略）\n ### 从算法改进思路上看，分别针对检测和识别模型，进行了共9个方面的改进",
+      fileCode: "function fn() {\n  console.log('xxx')\n}",
+      markdown: "",
       columns: [
         { 
-          dataIndex: "fileName", 
-          scopedSlots: { customRender: 'fileName' },  
+          dataIndex: "name", 
+          scopedSlots: { customRender: 'name' },  
           align: 'left', 
-          key: "fileName" 
-        },
-        { 
-          dataIndex: "size", 
-          align: 'center', 
-          key: "size" 
-        },
-        { 
-          dataIndex: "commit", 
-          align: 'center', 
-          key: "commit" 
-        },
-        { 
-          dataIndex: "lately", 
-          align: 'center', 
-          key: "lately" 
+          key: "name" 
         },
         { 
           key: 'action',
@@ -163,13 +169,27 @@ export default {
           scopedSlots: { customRender: 'action' }, 
         },
       ],
-      fileData: [
-        { fileName: 'app.py', size: '1023kb', commit: 'first cm', lately: '1 months ago' },
-        { fileName: 'target.py', size: '1023kb', commit: 'first cm', lately: '1 months ago' },
-        { fileName: 'result.py', size: '70kb', commit: 'first cm', lately: '1 months ago' },
-        { fileName: 'config.js', size: '489kb', commit: 'first cm', lately: '1 months ago' },
-        { fileName: 'readme.md', size: '688kb', commit: 'first cm', lately: '1 months ago' },
+      versionColumns: [
+        {
+          dataIndex: 'name',
+          align: 'left',
+          key: 'name',
+          title: '名称'
+        },
+        {
+          dataIndex: 'message',
+          align: 'center',
+          key: 'message',
+          title: '信息'
+        },
+        { 
+          key: 'action',
+          title: '操作',
+          align: 'center',
+          scopedSlots: { customRender: 'action' }, 
+        },
       ],
+      fileData: [],
     };
   },
   created() {
@@ -194,19 +214,97 @@ export default {
   methods: {
     init() {
       console.log('init', this.activeId)
+      selectModelDetail({ modelId: this.activeId }).then(res => {
+        console.log(res)
+        res = res.data.data
+        this.modelObj = res;
+        this.tagsLsit = res.labels;
+        this.tagsLsit.unshift(res.modelTask);
+        this.tagsLsit.unshift(res.modelLibrary);
+        this.crumbList.push({
+          name: res.modelName,
+          path: ""
+        })
+        this.getIntroduction();
+      })
     },
 
     goHome() {
       this.$router.push({ path: '/aiModel' });
     },
 
+    getIntroduction() {
+      getCodeFileContent({
+        projectId: this.modelObj.projectId,
+        filePath: "README.md"
+      }).then(res => {
+        this.markdown = res.data.data;
+      })
+    },
+
     tabsChange(key) {
       console.log(key)
+      if(key === 'space') {
+        getModelCodeFile({
+          projectId: this.modelObj.projectId,
+          filePath: ""
+        }).then(res => {
+          console.log(res)
+          res = res.data.data;
+          this.fileData = res;
+        })
+      } else if(key === 'introduction') {
+        this.getIntroduction();
+      }
     },
 
     fileClick(record) {
       console.log(record);
-      this.isShowFileContent = true;
+      if(record.type === 'BLOB') {
+        getCodeFileContent({
+          projectId: this.modelObj.projectId,
+          filePath: record.path
+        }).then(res => {
+          console.log(res)
+          this.isShowFileContent = true;
+          this.fileCode = res.data.data;
+        })
+      } else if(record.type === 'TREE') {
+        getModelCodeFile({
+          projectId: this.modelObj.projectId,
+          filePath: record.path
+        }).then(res => {
+          this.fileData = res.data.data;
+          this.crumbList.push(record)
+        })
+      }
+    },
+
+    returnFlod(item) {
+      getModelCodeFile({
+        projectId: this.modelObj.projectId,
+        filePath: item.path
+      }).then(res => {
+        this.fileData = res.data.data;
+        let deleteIndex = this.crumbList.findIndex(e => e.name === item.name);
+        this.crumbList = this.crumbList.slice(0, deleteIndex + 1)
+      }).finally(() => {
+        this.isShowFileContent = false;
+      })
+    },
+
+    handleDownLoadFile() {
+      downloadFile({
+        projectId: this.modelObj.projectId,
+        // filePath: 
+      })
+    },
+
+    downLoad(record) {
+      console.log(record)
+      download(record.commit.url).then(res => {
+        console.log(res)
+      })
     }
   },
 };

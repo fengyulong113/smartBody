@@ -21,7 +21,8 @@ module.exports = {
     },
     proxy: {
       'base': {
-        target: 'http://192.168.169.181:6099/base',
+        // target: 'http://192.168.169.181:6099/base',
+        target: 'http://172.168.0.123:6099/base',
         ws: true,
         pathRewrite: {
           '^/base': '/'
@@ -35,7 +36,7 @@ module.exports = {
         }
       },
       'dict': {
-        target: 'http://192.168.169.28:8089/ai',
+        target: 'http://172.168.0.123:8089/ai',
         ws: true,
         pathRewrite: {
           '^/dict': '/'
