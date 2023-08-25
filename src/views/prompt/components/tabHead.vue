@@ -4,11 +4,11 @@
     <div v-else></div>
     <div class="options">
       <a-select v-model="filterForm.labelVal" placeholder="请选择模板标签" style="width: 200px" allowClear @change="handleChange">
-        <a-select-option value="jack">
-          Jack
-        </a-select-option>
-        <a-select-option value="lucy">
-          Lucy
+        <a-select-option 
+          v-for="(item, i) in dictionary.prompt_label" 
+          :key="i" 
+          :value="item.value">
+          {{ item.value }}
         </a-select-option>
       </a-select>
       <a-input-search v-model="filterForm.searchVal" placeholder="请输入模板名称" style="width: 200px" @search="onSearch" />
@@ -16,7 +16,7 @@
     </div>
 
     <a-modal
-      title="创建Prompt模板"
+      :title="titleText"
       v-model="createPromptVisible"
       @cancel="cancelCreatePrompt"
       @ok="okCreatePrompt"
@@ -38,7 +38,14 @@
           <a-input v-model="promptForm.templateName" placeholder="请输入模板名称"></a-input>
         </a-form-model-item>
         <a-form-model-item label="模板标签">
-          <a-select v-model="promptForm.templateLabel" placeholder="请输入模板名称"></a-select>
+          <a-select allowClear mode="multiple" v-model="promptForm.labels" placeholder="请输入模板名称">
+            <a-select-option 
+              v-for="(item, i) in dictionary.prompt_label" 
+              :key="i" 
+              :value="item.value">
+              {{ item.value }}
+            </a-select-option>
+          </a-select>
         </a-form-model-item>
         <a-form-model-item label="模板内容" prop="templateContent">
           <a-textarea v-model="promptForm.templateContent" placeholder="请输入模板内容" :autoSize="{ minRows: 4, maxRows: 4 }"></a-textarea>
@@ -49,6 +56,11 @@
 </template>
 
 <script>
+import {
+  addPromptTemplate,
+  editPromptTemplate
+} from '@/api/prompt';
+import { mapGetters } from 'vuex';
 export default {
   name: 'TabHead',
   props: {
@@ -63,11 +75,14 @@ export default {
         labelVal: undefined,
         searchVal: "",
       },
+      titleText: "",
+      addOrEdit: "",
       createPromptVisible: false,
       promptForm: {
         templateName: "",
-        templateLabel: undefined,
+        labels: undefined,
         templateContent: "",
+        templateType: "自制模板"
       },
       rules: {
         templateName: [
@@ -78,6 +93,9 @@ export default {
         ],
       },
     };
+  },
+  computed: {
+    ...mapGetters(["dictionary"])
   },
   watch: {
     filterForm:{
@@ -95,25 +113,71 @@ export default {
     // 创建模板
     createPrompt() {
       this.createPromptVisible = true;
-
+      this.titleText = "创建Prompt模板";
+      this.addOrEdit = "add";
     },
-
+    
     okCreatePrompt() {
-
+      if(this.addOrEdit === 'add') {
+        const params = {
+          ...this.promptForm,
+          labelName: this.promptForm.labels.join(",")
+        }
+        addPromptTemplate(params).then(res => {
+          if(res.data.status === 1){
+            this.$notification['success']({ message: '创建成功' });
+            this.$emit("getData");
+          }
+        }).finally(() => {
+          this.createPromptVisible = false;
+          this.titleText = "";
+          this.addOrEdit = "";
+          this.promptForm = {
+            templateName: "",
+            labels: undefined,
+            templateContent: "",
+            templateType: "自制模板"
+          }
+        })
+      } else if(this.addOrEdit === 'edit') {
+        const params = {
+          ...this.promptForm,
+          labelName: this.promptForm.labels.join(",")
+        }
+        editPromptTemplate(params).then(res => {
+          if(res.data.status === 1){
+            this.$notification['success']({ message: '编辑成功' });
+            this.$emit("getData");
+          }
+        }).finally(() => {
+          this.createPromptVisible = false;
+          this.titleText = "";
+          this.addOrEdit = "";
+          this.promptForm = {
+            templateName: "",
+            labels: undefined,
+            templateContent: "",
+            templateType: "自制模板"
+          }
+        })
+      }
     },
 
     cancelCreatePrompt() {
       this.createPromptVisible = false;
+      this.titleText = "";
+      this.addOrEdit = "";
       this.promptForm = {
         templateName: "",
-        templateLabel: undefined,
+        labels: undefined,
         templateContent: "",
+        templateType: "自制模板"
       }
     },
 
     handleChange() {},
     onSearch() {
-
+      this.$emit("getData");
     },
     reset() {
       this.filterForm = {
