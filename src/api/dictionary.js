@@ -1,6 +1,5 @@
 import fetch from "./axios";
 
-const dict = 'http://localhost:8089/ai'
 
 export const queryAllDictItems = (params) => {
   return fetch({

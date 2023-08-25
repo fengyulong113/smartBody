@@ -11,7 +11,7 @@ import VueRouter from 'vue-router';
 import SmartBody from '../views/smartBody.vue';
 import BigModel from '../views/bigModel.vue';
 import SmallModel from  '../views/smallModel.vue';
-import DataSet from '../views/dataSet.vue';
+// import DataSet from '../views/dataSet.vue';
 import Script from '../views/script.vue';
 import Prompt from '../views/prompt/index.vue'
 // 0816
@@ -55,11 +55,11 @@ const routes = [
     name: "smallModel",
     component: SmallModel
   },
-  {
-    path: "/dataSet",
-    name: "dataSet",
-    component: DataSet
-  },
+  // {
+  //   path: "/dataSet",
+  //   name: "dataSet",
+  //   component: DataSet
+  // },
   {
     path: "/script",
     name: "script",

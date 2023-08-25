@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="datasetContainer">
     <div class="tips">
       <el-collapse v-model="activeNames">
@@ -285,4 +285,4 @@ export default {
   width: 100%;
   margin: 10px 0;
 }
-</style>
+</style> -->

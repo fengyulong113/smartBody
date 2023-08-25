@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-export const baseURL = 'http://localhost:8080';
 // axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 
 function fetch(axiosConfig) {
