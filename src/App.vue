@@ -16,6 +16,7 @@ export default {
   name: 'App',
   created() {
     this.$store.dispatch('setDictionary');
+    this.$store.dispatch('setDicts');
   }
 }
 </script>

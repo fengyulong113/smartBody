@@ -28,7 +28,7 @@
             <div class="test_input">
               <el-select v-model="TestState">
                 <el-option
-                  v-for="(item, i) in dictionary.evaluation_job_status"
+                  v-for="(item, i) in dictionarys.evaluation_job_status"
                   :key="i"
                   :label="item.title"
                   :value="item.value"
@@ -203,7 +203,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["dictionary"]),
+    ...mapGetters(["dictionarys"]),
   },
   created() {
     this.$bus.$on("closeAddTask", (data) => {
@@ -225,7 +225,7 @@ export default {
   },
   mounted() {
     this.selectByConditions({});
-    // console.log(JSON.stringify(this.dictionary));
+    console.log(JSON.stringify(this.dictionarys));
   },
   components: { AddTask, EvaluteReport, Constrast, TestResport, EditTask },
 
@@ -290,14 +290,14 @@ export default {
       // console.log(
       //   "55555",
       //   row,
-      //   this.dictionary.evaluation_job_status.filter(
+      //   this.dictionarys.evaluation_job_status.filter(
       //     (item) => item.value == row.status
       //   )[0]
       // );
       if (row.status == undefined || row.status == null) return;
       let arr =
-        this.dictionary.evaluation_job_status !== undefined
-          ? JSON.parse(JSON.stringify(this.dictionary.evaluation_job_status))
+        this.dictionarys.evaluation_job_status !== undefined
+          ? JSON.parse(JSON.stringify(this.dictionarys.evaluation_job_status))
           : []; //运行了,list的条数乘以2次,有问题
       let title;
       if (arr.length > 0) {
@@ -308,7 +308,7 @@ export default {
     },
 
     // statusFormatter(value) {
-    //   return this.dictionary.evaluation_job_status.filter(
+    //   return this.dictionarys.evaluation_job_status.filter(
     //     (item) => item.value == value
     //   )[0].title;
     // },

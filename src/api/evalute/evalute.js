@@ -89,6 +89,14 @@ export const selectExecutedJobByDataset = (params) => {
     params,
   });
 };
+//评测自带字典
+export const queryDictItems = (params) => {
+  return fetch({
+    url: `base/sys/dict/queryAllDictItems`,
+    method: "get",
+    params,
+  });
+};
 
 // 大模型更新
 export const updateByModelId = (data) => {

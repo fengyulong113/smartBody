@@ -27,29 +27,29 @@ module.exports = {
       errors: true,
     },
     proxy: {
-      'base': {
-        // target: 'http://192.168.169.181:6099/base',
+      base: {
+        // target: "http://localhost:6099/base",
         target: 'http://172.168.0.123:6099/base',
         ws: true,
         pathRewrite: {
-          '^/base': '/'
-        }
+          "^/base": "/",
+        },
       },
-      'script': {
-        target: 'http://192.168.169.181:6010',
+      script: {
+        target: "http://192.168.169.181:6010",
         ws: true,
         pathRewrite: {
-          '^/script': '/'
-        }
+          "^/script": "/",
+        },
       },
-      'dict': {
-        target: 'http://172.168.0.123:8089/ai',
+      dict: {
+        target: "http://172.168.0.123:8089/ai",
         ws: true,
         pathRewrite: {
-          '^/dict': '/'
-        }
-      }
-    }
+          "^/dict": "/",
+        },
+      },
+    },
   },
   configureWebpack: {
     resolve: {
