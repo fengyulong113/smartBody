@@ -17,6 +17,9 @@ import Prompt from '../views/prompt/index.vue'
 // 0816
 import Evaluate from '../views/evaluate/evaluating.vue'
 import Testing from '../views/evaluate/testing.vue'
+import AiModel from '../views/aiModel/index.vue';
+import ModelsDetail from '../views/aiModel/modelsDetail.vue';
+import CreateModel from '../views/aiModel/createModel.vue';
 
 Vue.use(VueRouter)
 
@@ -66,6 +69,21 @@ const routes = [
     path: "/prompt",
     name: "prompt",
     component: Prompt
+  },
+  {
+    path: "/aiModel",
+    name: "aiModel",
+    component: AiModel
+  },
+  {
+    path: "/modelsDetail",
+    name: "modelsDetail",
+    component: ModelsDetail
+  },
+  {
+    path: "/createModel",
+    name: "createModel",
+    component: CreateModel
   },
 ]
 

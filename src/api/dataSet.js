@@ -2,7 +2,7 @@ import fetch from "./axios";
 
 export const evaluate = (params) => {
   return fetch({
-    url: "api/evaluateTool/evaluate",
+    url: "base/evaluateTool/evaluate",
     method: 'get',
     params
   })

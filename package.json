@@ -15,7 +15,10 @@
     "element-ui": "^2.15.13",
     "moment": "^2.29.4",
     "vue": "^2.6.11",
+    "vue-markdown": "^2.2.4",
     "vue-router": "^3.6.5",
+    "vue2-ace-editor": "0.0.15",
+    "vue2-editor": "^2.10.3",
     "vuex": "^3.6.2"
   },
   "devDependencies": {

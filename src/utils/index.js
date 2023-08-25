@@ -42,3 +42,9 @@ export const smartStageFile = {
   attachStage: "默认",
   attachCategory: "智能体文件",
 }
+
+export function createFile(fileName, content, type = '') {
+  let blob = new Blob([content], {type: type});
+  let newFile = new File([blob], fileName, {type: blob.type});
+  return newFile;
+}

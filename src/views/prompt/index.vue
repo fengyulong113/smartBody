@@ -12,10 +12,13 @@
       <a-tab-pane key="预制模板" tab="预制模板">
         <div class="tabContent">
           <div class="tabMain">
-            <TabHead @getFilterParams="getFilterParams" @getData="getData" />
-            <CardList
+            <TabHead 
+              @getFilterParams="getFilterParams" 
+              @getData="getData" 
+            />
+            <CardList 
               :cardList="preList"
-              @getData="getData"
+              @getData="getData"  
               @getPageParams="getPageParams"
               @transOperation="transOperation"
             />
@@ -25,16 +28,16 @@
       <a-tab-pane key="自制模板" tab="自制模板" force-render>
         <div class="tabContent">
           <div class="tabMain">
-            <TabHead
+            <TabHead 
               ref="tabHeadRef"
               :type="'self'"
-              @getFilterParams="getFilterParams"
-              @getData="getData"
+              @getFilterParams="getFilterParams" 
+              @getData="getData" 
             />
-            <CardList
-              :type="'self'"
+            <CardList 
+              :type="'self'" 
               :cardList="selfList"
-              @getData="getData"
+              @getData="getData"  
               @getPageParams="getPageParams"
               @transOperation="transOperation"
             />
@@ -44,10 +47,13 @@
       <a-tab-pane key="我的收藏" tab="我的收藏">
         <div class="tabContent">
           <div class="tabMain">
-            <TabHead @getFilterParams="getFilterParams" @getData="getData" />
-            <CardList
+            <TabHead 
+              @getFilterParams="getFilterParams" 
+              @getData="getData" 
+            />
+            <CardList 
               :cardList="collectList"
-              @getData="getData"
+              @getData="getData"  
               @getPageParams="getPageParams"
               @transOperation="transOperation"
             />
@@ -66,8 +72,7 @@
       centered
       cancel-text="取消"
       okText="确定"
-      :maskClosable="false"
-    >
+      :maskClosable="false">
       <div>
         <SvgIcon icon-class="warning" />
         将要删除模板【{{ this.operationParams.templateName }}】
@@ -77,11 +82,14 @@
 </template>
 
 <script>
-import SvgIcon from "@/components/SvgIcon.vue";
-import TabHead from "./components/tabHead.vue";
-import CardList from "./components/cardList.vue";
+import SvgIcon from '@/components/SvgIcon.vue';
+import TabHead from './components/tabHead.vue';
+import CardList from './components/cardList.vue';
 
-import { selectByConditions, deletePromptTemplate } from "@/api/prompt";
+import {
+  selectByConditions,
+  deletePromptTemplate
+} from '@/api/prompt';
 export default {
   name: "Prompt",
   components: {
@@ -112,6 +120,7 @@ export default {
   },
 
   methods: {
+
     callback(key) {
       // this.preList = [];
       // this.selfList = [];
@@ -127,7 +136,7 @@ export default {
     },
 
     getData() {
-      selectByConditions(this.filterForm).then((res) => {
+      selectByConditions(this.filterForm).then(res => {
         res = res.data.data;
         this.total = res.total;
         switch (this.filterForm.templateType) {
@@ -140,10 +149,10 @@ export default {
           default:
             break;
         }
-        if (this.filterForm.isCollect === "是") {
+        if(this.filterForm.isCollect === '是') {
           this.collectList = res.list;
         }
-      });
+      })
     },
 
     getPageParams(data) {
@@ -158,15 +167,13 @@ export default {
 
     // 编辑or删除操作
     transOperation(data) {
-      if (data.type === "delete") {
+      if(data.type === 'delete') {
         this.deleteVisible = true;
         this.operationParams = JSON.parse(JSON.stringify(data.params));
       } else {
-        const tempData = data.params.labels.map((item) => item.labelName);
-        data.params.labels = tempData;
-        this.$refs.tabHeadRef.promptForm = JSON.parse(
-          JSON.stringify(data.params)
-        );
+        const tempData = data.params.labels.map(item => item.labelName)
+        data.params.labels = tempData
+        this.$refs.tabHeadRef.promptForm = JSON.parse(JSON.stringify(data.params));
 
         this.$refs.tabHeadRef.createPromptVisible = true;
         this.$refs.tabHeadRef.titleText = "编辑Prompt模板";
@@ -176,16 +183,14 @@ export default {
 
     // 确定删除
     okDeletePrompt() {
-      deletePromptTemplate({
-        templateIds: this.operationParams.templateId,
-      }).then((res) => {
-        if (res.data.status === 1) {
-          this.$notification["success"]({ message: "删除成功" });
+      deletePromptTemplate({ templateIds: this.operationParams.templateId }).then(res => {
+        if(res.data.status === 1){
+          this.$notification['success']({ message: '删除成功' });
           this.deleteVisible = false;
           this.getData();
         }
-      });
-    },
+      })
+    }
   },
 };
 </script>

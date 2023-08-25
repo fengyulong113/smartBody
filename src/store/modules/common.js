@@ -1,4 +1,4 @@
-import { queryAllDictItems } from "@/api/dictionary";
+import { queryAllDictItems } from '@/api/dictionary';
 
 const common = {
   state: {
@@ -7,16 +7,15 @@ const common = {
   mutations: {
     SET_DICTIONARY: (state, data) => {
       state.dictionary = data;
-    },
+    }
   },
   actions: {
     setDictionary({ commit }) {
-      queryAllDictItems().then((res) => {
-        // commit("SET_DICTIONARY", res.data.result);
-        commit("SET_DICTIONARY", res.data.data);
-      });
-    },
-  },
-};
+      queryAllDictItems().then(res => {
+        commit("SET_DICTIONARY", res.data.result);
+      })
+    }
+  }
+}
 
 export default common;

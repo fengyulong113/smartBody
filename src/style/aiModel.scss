@@ -1,0 +1,59 @@
+$themeColor: #2b32d8;
+
+/deep/ .ant-input-affix-wrapper .ant-input {
+  font-size: 13px;
+}
+/deep/ .ant-divider-horizontal {
+  margin: auto;
+  margin-bottom: 45px;
+}
+/deep/ .ant-radio-button-wrapper {
+  border: 1px solid;
+  border-color: rgb(190, 213, 255);
+  height: 28px;
+  line-height: 28px;
+  font-size: 12px;
+  margin-bottom: 8px;
+  margin-right: 5px;
+}
+/deep/ .ant-radio-button-wrapper:last-child, .ant-radio-button-wrapper:first-child {
+  border-radius: 0;
+  border-color: rgb(190, 213, 255);
+}
+
+/deep/ .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  box-shadow: none;
+}
+/deep/ .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+  box-shadow: none;
+}
+/deep/ .ant-tabs-bar  {
+  margin-bottom: 30px;
+}
+/deep/ .ant-tabs-ink-bar {
+  background-color: $themeColor;
+}
+/deep/ .ant-tabs-nav .ant-tabs-tab-active {
+  font-family: PingFangSC-Medium;
+  color: #000;
+}
+/deep/ .ant-tabs-nav .ant-tabs-tab:hover {
+  color: #000000A6;
+}
+/deep/ .ant-tabs-nav .ant-tabs-tab {
+  padding: 36px 0 17px;
+  font-size: 16px;
+  line-height: 22px;
+  margin-left: 0;
+  margin-right: 48px;
+}
+
+/deep/ .ant-table-tbody > tr > td {
+  padding: 5px 16px;
+  overflow-wrap: break-word;
+  font-size: 12px;
+  color: #999999;
+}
+/deep/ .ant-table-tbody > tr > td:first-child {
+  color: #333333;
+}
