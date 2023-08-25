@@ -24,7 +24,11 @@
         </el-select>
       </el-form-item>
       <el-form-item label="测评样本集选择">
-        <el-select v-model="editTaskForm.sampleSet" placeholder="请选择">
+        <el-select
+          v-model="editTaskForm.sampleSet"
+          placeholder="请选择"
+          @change="selectSet"
+        >
           <el-option
             v-for="item in evaluteSets"
             :label="item"
@@ -220,40 +224,67 @@ export default {
       this.editTaskForm = { ...this.editTaskForm, ...model };
       console.log(this.editTaskForm);
     },
+    selectSet(val) {
+      console.log("xuanzhong", val);
+      if (val == "m_dev.json") {
+        this.editTaskForm.datasetName = " m_dev.json";
+        this.editTaskForm.datasetPath =
+          "172.168.0.203:9000/evaluate-job/m_dev.json";
+      } else {
+        this.editTaskForm.datasetName = "sh_dev.json";
+        this.editTaskForm.datasetPath =
+          "172.168.0.203:9000/evaluate-job/sh_dev.json";
+      }
+
+      console.log(this.editTaskForm);
+    },
+
     // 新增评测窗口
     addInsertTask() {
       this.insertTask(1);
     },
     //暂存
     TSInserTask() {
-      this.insertTask(0);
+      // this.insertTask(0);
+      this.closeAddTask();
     },
     insertTask(status) {
       console.log(this.editTaskForm);
-      if (Object.keys(this.editTaskForm).length <= 0) return;
-      this.editTaskForm["status"] = status; //
-      updateByIdEvaluateJob(this.editTaskForm).then((res) => {
-        console.log("更新评测", res);
-        let message = res.data.message;
-        if (res.status == 200) {
-          let params = {
-            jobId: res.data.message,
-          };
-          operationEvalute(params).then((reponse) => {
-            console.log("执行", reponse);
-            status == 0 ? this.closeAddTask() : this.onSubmit(message);
-          });
+      if (Object.keys(this.editTaskForm).length <= 0) {
+        if (status == 0) {
+          this.closeAddTask();
+        } else {
+          // this.onSubmit();
+          this.$message.warning("表单为空");
         }
-      });
+      } else {
+        this.editTaskForm["status"] = status; //
+        updateByIdEvaluateJob(this.editTaskForm).then((res) => {
+          console.log("更新评测", res);
+          let message = res.data.message;
+          if (res.status == 200) {
+            let params = {
+              jobId: res.data.message,
+            };
+            if (status == 0) {
+              this.closeAddTask();
+            } else {
+              operationEvalute(params).then((reponse) => {
+                console.log("执行", reponse);
+                this.onSubmit(message);
+              });
+            }
+          }
+        });
+      }
     },
 
     closeAddTask() {
+      this.$bus.$emit("closeEditTask", false);
       this.$bus.$emit("refresh", "");
-      this.$bus.$emit("closeAddTask", false);
     },
     onSubmit(message) {
       this.$bus.$emit("refresh", "");
-      // this.$router.push({ name: "Testing", params: { key: message } });
     },
   },
 };

@@ -71,26 +71,22 @@
                 >
                   {{ row.status }}
                 </el-tag>
-                <!-- <span
-                  v-if="row.status != undefined"
-                  :style="{
-                    padding: ' 0 8px',
-                    border: '1px solid red',
-                    color: '#606266',
-                    borderRadius: '8px',
-                  }"
-                  v-html="statusFormatter(row)"
-                >
-                  {{ row.status }}
-                </span> -->
               </template>
             </el-table-column>
             <el-table-column fixed="right" label="操作">
               <template slot-scope="scope">
-                <el-button type="text" size="small" @click="imReport(scope.row)"
+                <el-button
+                  type="text"
+                  size="small"
+                  :disabled="scope.row.status < 3"
+                  @click="imReport(scope.row)"
                   >导出报告</el-button
                 >
-                <el-button type="text" size="small" @click="redact(scope.row)"
+                <el-button
+                  type="text"
+                  size="small"
+                  :disabled="scope.row.status >= 1"
+                  @click="redact(scope.row)"
                   >继续编辑</el-button
                 >
                 <el-button
@@ -182,7 +178,6 @@ export default {
           label: "已完成",
         },
       ],
-      // options: [],
       TestState: "",
       TestName: "",
       tableData: [],
@@ -191,7 +186,6 @@ export default {
         pageSize: 10, // 每页多少条
         total: 0, // 总记录数
       },
-      // currentPage: 1,
       dialogAddTaskVisible: false,
       dialogImportReportVisible: false,
       dialogConstrastVisible: false,
@@ -203,11 +197,14 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["dictionarys"]),
+    ...mapGetters(["dictionarys", "dictionary"]),
   },
   created() {
     this.$bus.$on("closeAddTask", (data) => {
-      this.dialogAddTaskVisible = data;
+      this.dialogAddTaskVisible = false;
+    });
+    this.$bus.$on("closeEditTask", (data) => {
+      this.dialogEditTaskVisible = false;
     });
     this.$bus.$on("closeResport", (data) => {
       this.dialogImportReportVisible = data;
@@ -225,7 +222,7 @@ export default {
   },
   mounted() {
     this.selectByConditions({});
-    console.log(JSON.stringify(this.dictionarys));
+    // console.log(JSON.stringify(this.dictionarys));
   },
   components: { AddTask, EvaluteReport, Constrast, TestResport, EditTask },
 
@@ -261,14 +258,7 @@ export default {
       if (page && Object.prototype.toString.call(page)) {
         data = Object.assign(data, page);
       }
-      // console.log("入参", data);
       selectByConditions(data).then((res) => {
-        // console.log("selectByConditions", res.data.data);
-        // this.tableData = this.getList(
-        //   res.data.data.list,
-        //   this.tablePage.pageNo,
-        //   this.tablePage.pageSize
-        // );
         (this.tableData = res.data.data.list),
           (this.tablePage.total = res.data.data.total);
       });
@@ -287,19 +277,14 @@ export default {
     },
     // 状态(0->暂存)
     statusFormatter(row) {
-      // console.log(
-      //   "55555",
-      //   row,
-      //   this.dictionarys.evaluation_job_status.filter(
-      //     (item) => item.value == row.status
-      //   )[0]
-      // );
+      console.log(this.dictionarys.evaluation_job_status);
       if (row.status == undefined || row.status == null) return;
       let arr =
-        this.dictionarys.evaluation_job_status !== undefined
+        this.dictionarys.evaluation_job_status != undefined
           ? JSON.parse(JSON.stringify(this.dictionarys.evaluation_job_status))
-          : []; //运行了,list的条数乘以2次,有问题
+          : [];
       let title;
+      // console.log(arr);
       if (arr.length > 0) {
         title = arr.filter((item) => item.value == row.status)[0].title;
       }

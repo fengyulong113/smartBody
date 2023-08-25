@@ -111,7 +111,7 @@ export default {
             };
           }
         );
-        console.log(this.contratRadar, this.indicator);
+        console.log("wwww", this.contratRadar, this.indicator);
         this.$refs.radar.getRadarData({
           contratRadar: this.contratRadar,
           indicator: this.indicator,

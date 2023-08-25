@@ -97,6 +97,14 @@ export const queryDictItems = (params) => {
     params,
   });
 };
+// 样本集上传
+export const uploadFileToMinio = (data) => {
+  return fetch({
+    url: "base/evaluateJob/uploadFileToMinio",
+    method: "post",
+    data,
+  });
+};
 
 // 大模型更新
 export const updateByModelId = (data) => {

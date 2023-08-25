@@ -1,5 +1,6 @@
 import { queryAllDictItems } from "@/api/dictionary";
-import { queryDictItems } from "@/api/evalute/evalute";
+import { queryDictItems } from "@/api/evalute/evalute.js";
+
 const common = {
   state: {
     dictionary: {},
@@ -16,12 +17,14 @@ const common = {
   actions: {
     setDictionary({ commit }) {
       queryAllDictItems().then((res) => {
-        commit("SET_DICTIONARY", res.data.result);
+        // commit("SET_DICTIONARY", res.data.result);
+        commit("SET_DICTIONARY", res.data.data);
       });
     },
     setDicts({ commit }) {
       queryDictItems().then((res) => {
         commit("SET_DICTS", res.data.data);
+        console.log("setDicts", res.data.data);
       });
     },
   },

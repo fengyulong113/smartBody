@@ -10,7 +10,10 @@
           <div>军事装备知识SH-dev</div>
         </div>
         <div>
-          <Radars :radarsResults="radarsResults" :contrastJobIdContrast="contrastJobIdContrast"></Radars>
+          <Radars
+            :radarsResults="radarsResults"
+            :contrastJobIdContrast="contrastJobIdContrast"
+          ></Radars>
         </div>
       </div>
       <div class="right">
@@ -47,6 +50,7 @@ export default {
     Radars,
   },
   mounted() {
+    console.log("1111", this.contrastJobIdContrast);
   },
   methods: {
     closeResport() {

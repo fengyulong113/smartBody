@@ -12,6 +12,7 @@
         <el-select
           v-model="modelType"
           placeholder="请选择"
+          clearable
           @change="selectModel"
         >
           <el-option
@@ -23,7 +24,11 @@
         </el-select>
       </el-form-item>
       <el-form-item label="测评样本集选择">
-        <el-select v-model="addTaskForm.sampleSet" placeholder="请选择">
+        <el-select
+          v-model="addTaskForm.sampleSet"
+          placeholder="请选择"
+          @change="selectSet"
+        >
           <el-option
             v-for="item in evaluteSets"
             :label="item"
@@ -58,25 +63,23 @@
               只能上传jpg/png文件，且不超过500kb
             </div> -->
           <!-- </el-upload> -->
-          <el-upload
+          <!-- <el-upload
             v-bind="$attrs"
             class="upload-samples-sets"
             v-on="$listeners"
-            action="api/evaluateJob/uploadFileToMinio"
-            :on-preview="handlePreview"
+            action=""
             :on-remove="handleRemove"
-            :before-remove="beforeRemove"
             :on-success="handleUploadSuccess"
             multiple
             :limit="3"
             :on-exceed="handleExceed"
             :file-list="fileList"
+            :http-request="uploadFile"
           >
-            <!-- <img src="../../../../../assets/images/download.png" alt="" /> -->
             <el-button size="small"
               ><i class="el-icon-plus"></i><span>上传样本集</span></el-button
-            >
-          </el-upload>
+            > 
+          </el-upload>-->
         </div>
       </el-form-item>
       <el-form-item label="指标体系">
@@ -104,6 +107,7 @@ import {
   insertEvaluateJob,
   operationEvalute,
   selectDatasetList,
+  uploadFileToMinio,
 } from "../../../api/evalute/evalute";
 import { fileLimit } from "../components/upload";
 export default {
@@ -149,7 +153,16 @@ export default {
     // 文件类型, 例如['png', 'jpg', 'jpeg']
     fileType: {
       type: Array,
-      default: () => ["doc", "docx", "xls", "xlsx", "ppt", "txt", "pdf"],
+      default: () => [
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+        "ppt",
+        "txt",
+        "pdf",
+        "json",
+      ],
     },
   },
   data() {
@@ -173,6 +186,21 @@ export default {
   },
   methods: {
     // 上传
+    uploadFile() {
+      const file = this.fileList;
+      // 使用FormData传参数和文件
+      var form = new FormData();
+      // 文件
+      form.append("file", file);
+      console.log("files", file);
+      // 调用封装好的上传方法，传给后台FormData
+      uploadFileToMinio(form).then((resp) => {
+        console.log("res", resp);
+        if (resp && resp.status == 200) {
+          this.$message("成功了");
+        }
+      });
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },
@@ -200,20 +228,35 @@ export default {
       });
       //样本集
       selectDatasetList().then((res) => {
-        console.log("模型", res.data.data);
+        // console.log("模型", res.data.data);
         this.evaluteSets = res.data.data;
       });
     },
     //模型选择
     selectModel(val) {
-      console.log("xuanzhong", val);
+      // console.log("xuanzhong", val);
       let model = this.models.filter((item) => item.id == val)[0];
       delete model["id"];
       this.addTaskForm = { ...this.addTaskForm, ...model };
       console.log(this.addTaskForm);
     },
+    selectSet(val) {
+      console.log("xuanzhong", val);
+      if (val == "m_dev.json") {
+        this.addTaskForm.datasetName = " m_dev.json";
+        this.addTaskForm.datasetPath =
+          "172.168.0.203:9000/evaluate-job/m_dev.json";
+      } else {
+        this.addTaskForm.datasetName = "sh_dev.json";
+        this.addTaskForm.datasetPath =
+          "172.168.0.203:9000/evaluate-job/sh_dev.json";
+      }
+
+      console.log(this.addTaskForm);
+    },
     // 新增评测窗口
     addInsertTask() {
+      this.$router.push({ name: "Testing", params: { key: 1 } });
       this.insertTask(1);
     },
     //暂存
@@ -221,30 +264,41 @@ export default {
       this.insertTask(0);
     },
     insertTask(status) {
-      if (Object.keys(this.addTaskForm).length <= 0) return;
-      this.addTaskForm["status"] = status; //
-      insertEvaluateJob(this.addTaskForm).then((res) => {
-        console.log("新增评测", res);
-        let message = res.data.message;
-        if (res.status == 200) {
-          let params = {
-            jobId: res.data.message,
-          };
-          operationEvalute(params).then((reponse) => {
-            console.log("执行", reponse);
-            status == 0 ? this.closeAddTask() : this.onSubmit(message);
-          });
+      if (Object.keys(this.addTaskForm).length <= 0) {
+        if (status == 0) {
+          this.closeAddTask();
+        } else {
+          // this.onSubmit();
+          this.$message.warning("表单为空");
         }
-      });
+      } else {
+        this.addTaskForm["status"] = status; //
+        insertEvaluateJob(this.addTaskForm).then((res) => {
+          console.log("新增评测", res);
+          let message = res.data.message;
+          if (res.status == 200) {
+            let params = {
+              jobId: res.data.message,
+            };
+            if (status == 0) {
+              this.closeAddTask();
+            } else {
+              operationEvalute(params).then((reponse) => {
+                console.log("执行", reponse);
+                this.onSubmit(message);
+              });
+            }
+          }
+        });
+      }
     },
 
     closeAddTask() {
-      this.$bus.$emit("refresh", "");
       this.$bus.$emit("closeAddTask", false);
+      this.$bus.$emit("refresh", "");
     },
     onSubmit(message) {
       this.$bus.$emit("refresh", "");
-      this.$router.push({ name: "Testing", params: { key: message } });
     },
   },
 };
