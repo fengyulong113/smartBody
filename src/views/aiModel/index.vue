@@ -249,15 +249,16 @@ export default {
         pageSize: 200
       }
       getRootList(params).then(res => {
-        this.categotyList = res.data.result.records;
+        this.categotyList = res.data.data.list;
       })
     },
 
     // 标签页更改
     tabsChange(key) {
+      console.log(key)
       if(key !== 1) {
         const params = {
-          pid: key,
+          parentId: key,
           column: "createTime",
           order: "desc",
           filed: "id, name",
@@ -269,14 +270,14 @@ export default {
           if(res.every((item) =>  item.hasChild === '1')) {
             res.forEach((record) => {
               getChildList({ 
-                pid: record.id,
+                parentId: record.id,
                 column: "createTime",
                 order: "desc",
                 filed: "id, name",
                 pageNo: 1,
                 pageSize: 200
               }).then(r => {
-                record.childData = r.data.result;
+                record.childData = r.data.data.list;
                 this.subCategroy = {
                   data: res,
                   level: 2
