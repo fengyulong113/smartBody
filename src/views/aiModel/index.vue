@@ -266,7 +266,7 @@ export default {
           pageSize: 200
         }
         getChildList(params).then(res => {
-          res = res.data.result;
+          res = res.data.data.list;
           if(res.every((item) =>  item.hasChild === '1')) {
             res.forEach((record) => {
               getChildList({ 
@@ -431,7 +431,7 @@ export default {
     }
     .aiModelLeft {
       width: 314px;
-      min-height: 1093px;
+      // min-height: 1093px;
       margin-right: 70px;
       position: relative;
       .clearChoose {
@@ -515,7 +515,7 @@ export default {
       }
     }
     .aiModelListWapper {
-      min-height: 1050px;
+      // min-height: 1050px;
       --cardNumber: 3;
       --language: "zh-CN";
       display: flex;
