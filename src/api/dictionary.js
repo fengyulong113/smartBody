@@ -4,7 +4,7 @@ const dict = 'http://localhost:8089/ai'
 
 export const queryAllDictItems = (params) => {
   return fetch({
-    url: `dict/sys/dict/queryAllDictItems`,
+    url: `${dict}/sys/dict/queryAllDictItems`,
     method: 'get',
     params
   })
@@ -12,7 +12,7 @@ export const queryAllDictItems = (params) => {
 
 export const loadAllData = (params) => {
   return fetch({
-    url: `dict/sys/category/loadAllData`,
+    url: `${dict}/sys/category/loadAllData`,
     method: 'get',
     params
   })
@@ -27,7 +27,7 @@ export const loadAllData = (params) => {
 // }
 export const getRootList = (params) => {
   return fetch({
-    url: `dict/sys/category/rootList`,
+    url: `${dict}/sys/category/rootList`,
     method: 'get',
     params
   })
@@ -42,7 +42,7 @@ export const getRootList = (params) => {
 // }
 export const getChildList = (params) => {
   return fetch({
-    url: `dict/sys/category/childList`,
+    url: `${dict}/sys/category/childList`,
     method: 'get',
     params
   })
