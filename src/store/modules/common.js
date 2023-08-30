@@ -17,14 +17,12 @@ const common = {
   actions: {
     setDictionary({ commit }) {
       queryAllDictItems().then((res) => {
-        // commit("SET_DICTIONARY", res.data.result);
         commit("SET_DICTIONARY", res.data.data);
       });
     },
     setDicts({ commit }) {
       queryDictItems().then((res) => {
         commit("SET_DICTS", res.data.data);
-        console.log("setDicts", res.data.data);
       });
     },
   },

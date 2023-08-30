@@ -41,7 +41,7 @@ $themeColor: #2b32d8;
   color: #000000A6;
 }
 /deep/ .ant-tabs-nav .ant-tabs-tab {
-  padding: 36px 0 17px;
+  padding: 15px 0;
   font-size: 16px;
   line-height: 22px;
   margin-left: 0;
@@ -56,4 +56,33 @@ $themeColor: #2b32d8;
 }
 /deep/ .ant-table-tbody > tr > td:first-child {
   color: #333333;
+}
+
+/deep/ .el-checkbox-button--small .el-checkbox-button__inner {
+  margin: 3px;
+  border: 1px solid;
+  border-color: rgb(190, 213, 255);
+  border-radius: 4px;
+}
+/deep/ .el-checkbox-button:first-child .el-checkbox-button__inner {
+  border-color: rgb(190, 213, 255);
+  border-radius: 4px;
+}
+/deep/ .el-checkbox-button:last-child .el-checkbox-button__inner {
+  border-color: rgb(190, 213, 255);
+  border-radius: 4px;
+}
+/deep/ .el-checkbox-button.is-focus .el-checkbox-button__inner {
+  border-color: rgb(190, 213, 255);
+}
+/deep/ .el-checkbox-button:hover .el-checkbox-button__inner {
+  color: $themeColor;
+}
+/deep/ .el-checkbox-button.is-checked .el-checkbox-button__inner {
+  border-color: $themeColor;
+  background-color: $themeColor;
+  box-shadow: none;
+}
+/deep/ .el-checkbox-button.is-checked:hover .el-checkbox-button__inner {
+  color: #fff;
 }

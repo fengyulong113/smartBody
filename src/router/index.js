@@ -11,15 +11,12 @@ import VueRouter from 'vue-router';
 import SmartBody from '../views/smartBody.vue';
 import BigModel from '../views/bigModel.vue';
 import SmallModel from  '../views/smallModel.vue';
-// import DataSet from '../views/dataSet.vue';
 import Script from '../views/script.vue';
 import Prompt from '../views/prompt/index.vue'
 // 0816
 import Evaluate from '../views/evaluate/evaluating.vue'
 import Testing from '../views/evaluate/testing.vue'
 import AiModel from '../views/aiModel/index.vue';
-import ModelsDetail from '../views/aiModel/modelsDetail.vue';
-import CreateModel from '../views/aiModel/createModel.vue';
 
 Vue.use(VueRouter)
 
@@ -55,11 +52,6 @@ const routes = [
     name: "smallModel",
     component: SmallModel
   },
-  // {
-  //   path: "/dataSet",
-  //   name: "dataSet",
-  //   component: DataSet
-  // },
   {
     path: "/script",
     name: "script",
@@ -73,17 +65,7 @@ const routes = [
   {
     path: "/aiModel",
     name: "aiModel",
-    component: AiModel
-  },
-  {
-    path: "/modelsDetail",
-    name: "modelsDetail",
-    component: ModelsDetail
-  },
-  {
-    path: "/createModel",
-    name: "createModel",
-    component: CreateModel
+    component: AiModel,
   },
 ]
 

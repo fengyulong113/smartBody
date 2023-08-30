@@ -1,29 +1,6 @@
 <template>
   <div class="aiCreateModel">
-    <div class="aiCreateModelHeadWrap">
-      <div class="aiCreateModelHead">
-        <a-breadcrumb class="aiModelHdBreadcrumb ">
-          <a-breadcrumb-item>
-            <span class="aiModelHdBreadcrumbBack" @click="goHome">模型库</span>
-          </a-breadcrumb-item>
-          <a-breadcrumb-item>
-            <span 
-              :class="uploadFileShow ? `aiModelHdBreadcrumbBack` : ''" 
-              @click="uploadFileShow = false;modelId = ''">
-              创建模型
-            </span>
-          </a-breadcrumb-item>
-          <a-breadcrumb-item v-if="uploadFileShow">
-            <span>上传文件</span>
-          </a-breadcrumb-item>
-        </a-breadcrumb>
-      </div>
-    </div>
     <div class="aiCreateModelBd">
-      <!-- <div class="aiCreateModelBdName">
-        <div class="labelTitle">模型名称</div>
-        <a-input placeholder="模型名称"></a-input>
-      </div> -->
       <div v-if="!uploadFileShow" class="aiCreateModelBdMetaData">
         <div class="aiCreateModelBdMetaDataMain">
           <a-row>
@@ -68,7 +45,7 @@
             <a-col :span="12" class="gridRight">
               <div class="grid">
                 <div class="gridLabel">标签</div>
-                <a-select class="gridValue" allowClear v-model="modelForm.label">
+                <a-select class="gridValue" mode="multiple" allowClear v-model="modelForm.labelName">
                   <a-select-option
                     v-for="(item, i) in  dictionary.model_label"
                     :key="i"
@@ -245,7 +222,6 @@
           height="500px"
           style="border-bottom: 1px solid #e5e7eb;"
         />
-        <!-- <vue-markdown ref="markdownRef" :source="md"></vue-markdown> -->
         <div class="aiCreateModelBdBdTitle">file</div>
         <div class="aiCreateModelBdBdMid">
           <a-upload
@@ -257,9 +233,6 @@
               showRemoveIcon: true,
             }"
           >
-            <!-- <a-button v-if="fileList.length == 0">
-              <a-icon type="file" /> 选择文件
-            </a-button> -->
             <a-button>
               <a-icon type="file" /> 选择文件
             </a-button>
@@ -300,15 +273,14 @@ export default {
         fontSize: '14px',
         showGutter: false,
         tabSize: 2,
-        highlightActiveLine: false,
-        displayIndentGuides: false,
-        autoScrollEditorIntoView: true,
+        wrap: true, // 换行
+        enableLiveAutocompletion: true, // 智能补全
+        enableSnippets: true,
       },
       markdownContent: "# README",
-      md: "# ddd\n ## dasd",
       fileList: [],
       modelForm: {
-        label: undefined,
+        labelName: undefined,
         modelDesc: "",
         modelFormat: undefined,
         modelLibrary: undefined,
@@ -371,15 +343,9 @@ export default {
     ...mapGetters(['dictionary'])
   },
   methods: {
-    goHome() {
-      this.$router.push({ path: '/aiModel' });
-    },
 
     updateCode(newData) {
       this.markdownContent = newData;
-      console.log(this.$refs.markdownRef)
-      // let file = createFile('README.md', this.markdownContent);
-      // console.log(file)
     },
 
     getTaskAndLibrary() {
@@ -390,19 +356,19 @@ export default {
         pageNo: 1,
         pageSize: 200
       }).then(res => {
-        this.categotyList = res.data.result.records;
+        this.categotyList = res.data.data.list;
         let task = this.categotyList.find(item => item.name === '模型分类')
         let library = this.categotyList.find(item => item.name === '框架')
 
         getChildList({
-          pid: task.id,
+          parentId: task.id,
           column: "createTime",
           order: "desc",
           filed: "id, name",
           pageNo: 1,
           pageSize: 200
         }).then(res => {
-          this.taskList = res.data.result.map(item => {
+          this.taskList = res.data.data.list.map(item => {
             return  {
               ...item,
               label: item.name,
@@ -413,14 +379,14 @@ export default {
         })
 
         getChildList({
-          pid: library.id,
+          parentId: library.id,
           column: "createTime",
           order: "desc",
           filed: "id, name",
           pageNo: 1,
           pageSize: 200
         }).then(res => {
-          this.libraryList = res.data.result;
+          this.libraryList = res.data.data.list;
         })
 
       })
@@ -429,11 +395,10 @@ export default {
 
     loadData(selectedOptions) {
       const targetOption = selectedOptions[selectedOptions.length - 1];
-      console.log(targetOption)
       targetOption.loading = true;
 
       getChildList({
-        pid: targetOption.id,
+        parentId: targetOption.id,
         column: "createTime",
         order: "desc",
         filed: "id, name",
@@ -441,7 +406,7 @@ export default {
         pageSize: 200
       }).then(res => {
         targetOption.loading = false;
-        targetOption.children = res.data.result.map(item => {
+        targetOption.children = res.data.data.list.map(item => {
           return  {
             ...item,
             label: item.name,
@@ -450,26 +415,15 @@ export default {
         });
         this.taskList = [...this.taskList];
       })
-      // load options lazily
-      // setTimeout(() => {
-      //   targetOption.loading = false;
-      //   targetOption.children = [
-      //     {
-      //       label: `${targetOption.label} Dynamic 1`,
-      //       value: 'dynamic1',
-      //     },
-      //     {
-      //       label: `${targetOption.label} Dynamic 2`,
-      //       value: 'dynamic2',
-      //     },
-      //   ];
-      //   this.optionsList = [...this.optionsList];
-      // }, 1000);
     },
 
     saveAndNext() {
+      let regx = /^[A-Za-z0-9-]+$/;
+
       if(this.modelForm.modelName === '') {
         this.$message.warning("请填写模型名称")
+      } else if(!regx.test(this.modelForm.modelName)) {
+        this.$message.warning("模型名称只能输入数字、英文和-")
       } else if(this.modelForm.modelType === undefined) {
         this.$message.warning("请先选择类型")
       } else {
@@ -490,7 +444,8 @@ export default {
                 break;
             }
             let tempModelTask = this.modelForm.modelTask[this.modelForm.modelTask.length - 1];
-            params.modelTask = tempModelTask
+            params.modelTask = tempModelTask;
+            params.labelName = this.modelForm.labelName.join(',')
             console.log(params)
             insertModel(params).then(res => {
               this.modelId = res.data.data;
@@ -502,17 +457,18 @@ export default {
     },
 
     saveModel() {
-      // let readmeFile = createFile('REAMDE.md', this.markdownContent);
-      // this.fileList.push(readmeFile);
-      // console.log(this.fileList)
+      let readmeFile = createFile('README.md', this.markdownContent);
+      this.fileList.push(readmeFile);
       let formData = new FormData();
       formData.append("modelId", this.modelId);
-      // // formData.append("files", readmeFile);
       this.fileList.forEach((file) => {
         formData.append("files", file);
       });
       uploadCodeFile(formData).then(res => {
-        console.log(res)
+        if(res.data.status === 1) {
+          this.$message.success("保存成功")
+          this.$emit('changePage', { type: 'aiModel' });
+        }
       })
     },
 

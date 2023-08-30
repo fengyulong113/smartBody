@@ -3,7 +3,7 @@ import fetch from "./axios";
 
 export const queryAllDictItems = (params) => {
   return fetch({
-    url: `${dict}/sys/dict/queryAllDictItems`,
+    url: `base/sys/dict/queryAllDictItems`,
     method: 'get',
     params
   })
@@ -11,7 +11,7 @@ export const queryAllDictItems = (params) => {
 
 export const loadAllData = (params) => {
   return fetch({
-    url: `${dict}/sys/category/loadAllData`,
+    url: `base/sys/category/loadAllData`,
     method: 'get',
     params
   })
@@ -26,7 +26,7 @@ export const loadAllData = (params) => {
 // }
 export const getRootList = (params) => {
   return fetch({
-    url: `${dict}/sys/category/rootList`,
+    url: `base/sys/category/rootList`,
     method: 'get',
     params
   })
@@ -41,7 +41,7 @@ export const getRootList = (params) => {
 // }
 export const getChildList = (params) => {
   return fetch({
-    url: `${dict}/sys/category/childList`,
+    url: `base/sys/category/childList`,
     method: 'get',
     params
   })

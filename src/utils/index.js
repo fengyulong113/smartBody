@@ -1,10 +1,11 @@
 
 
-export function axiosDownload(data, headers, fileName) {
+export function axiosDownload(data, headers, fileName, type) {
+  
   // new Blob([data])用来创建URL的file对象或者blob对象
   let url = window.URL.createObjectURL(
       new Blob([data], {
-          type:
+          type: type ? type :
               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8",
       })
   );

@@ -2,14 +2,6 @@
   <div class="aiModelDetail">
     <div class="aiModelDetailHdWrap">
       <div class="aiModelDetailHd">
-        <a-breadcrumb class="aiModelDetailHdBreadcrumb ">
-          <a-breadcrumb-item>
-            <span class="aiModelDetailHdBreadcrumbBack" @click="goHome">模型库</span>
-          </a-breadcrumb-item>
-          <a-breadcrumb-item>
-            <span>模型详情</span>
-          </a-breadcrumb-item>
-        </a-breadcrumb>
         <div class="aiModelDetailHdTitle">{{ modelObj.modelName }}</div>
         <div class="aiModelDetailHdSubtitle">
           <div class="modelDesc">{{ modelObj.modelDesc }}</div>
@@ -29,7 +21,7 @@
     </div>
     <div class="aiModelDetailBd">
       <div class="aiModelDetailBdMain">
-        <a-tabs default-active-key="introduction" @change="tabsChange">
+        <a-tabs default-active-key="introduction" v-model="tabsKey" @change="tabsChange">
           <a-tab-pane key="introduction" tab="模型介绍">
             <vue-markdown :source="markdown"></vue-markdown>
           </a-tab-pane>
@@ -50,17 +42,20 @@
                     </a-breadcrumb-item>
                   </a-breadcrumb>
                 </div>
-                <div class="aiModelDetailSpaceDownload" @click="handleDownLoadFile">
-                  <SvgIcon icon-class="download" />
-                  下载模型demo
+                <div style="width: 230px;display: flex;align-items: center;">
+                  <a-button type="primary" @click="createVersion">新增版本</a-button>
+                  <div class="aiModelDetailSpaceDownload" @click="handleDownLoadFile">
+                    <SvgIcon icon-class="download" />
+                    下载模型demo
+                  </div>
                 </div>
               </div>
 
               <div class="aiModelDetailSpaceH">
                 <div class="aiModelDetailSpaceHInfo">
-                  <div class="aiModelDetailSpaceHNick">fengyulong</div>
+                  <div class="aiModelDetailSpaceHNick">{{ modelObj.optUser }}</div>
                   <div class="aiModelDetailSpaceHSub">
-                    <span>Update icon 202211281453 (#5681)</span>
+                    <span>Update {{ modelObj.modelCreateTime }}</span>
                   </div>
                 </div>
               </div>
@@ -69,13 +64,14 @@
                 v-if="!isShowFileContent"
                 class="aiModelDetailSpaceTable"
                 :columns="columns"
+                rowKey="objectName"
                 :data-source="fileData"
                 :pagination="false" 
                 :showHeader="false"
               >
                 <template slot="name" slot-scope="text, record">
                   <div style="display: flex;align-items: center;cursor: pointer" @click="fileClick(record)">
-                    <a-icon :type="record.type === 'BLOB' ? 'file' : 'folder-open'" style="margin-right: 5px;"></a-icon>
+                    <a-icon :type="record.isDir ? 'folder-open' : 'file'" style="margin-right: 5px;"></a-icon>
                     <div>{{ text }}</div>
                   </div>
                 </template>
@@ -89,7 +85,6 @@
                   :mode="'javascript'"
                   :value="fileCode"
                   :theme="'github'"
-                  :displayIndentGuides="false"
                   :options="options"
                   width="100%"
                   height="500px"
@@ -98,14 +93,17 @@
 
             </div>
           </a-tab-pane>
-          <a-tab-pane key="download" tab="模型下载">
+          <a-tab-pane key="version" tab="模型版本">
             <a-table
               :columns="versionColumns"
               :data-source="modelObj.versions"
+              rowKey="objectName"
               :pagination="false"
+              size="default"
+              style="width: 500px;"
             >
               <span slot="action" slot-scope="text, record">
-                <a-button type="link" @click="downLoad(record)">下载</a-button>
+                <a-button type="link" @click="downLoadVersion(record)">下载</a-button>
               </span>
             </a-table>
           </a-tab-pane>
@@ -113,6 +111,30 @@
       </div>
       <div class="aiModelDetailBdAsideWrap"></div>
     </div>
+
+    <!-- 新增版本 -->
+    <a-modal
+    :visible="versionVisible"
+    title="新增版本"
+    :width="500"
+    cancelText="取消"
+    @cancel="cancelVersion"
+    :confirmLoading="confirmLoading"
+    @ok="handleOk"
+    >
+      <a-form-model
+        :model="versionForm"
+        :label-col="{ span: 4, offset: 0 }"
+        :wrapper-col="{ span: 16 }"
+        labelAlign="right"
+        ref="versionFormRef"
+        :rules="rules"
+        :maskClosable="false">
+        <a-form-model-item label="版本名称" prop="tagName">
+          <a-input v-model="versionForm.tagName" />
+        </a-form-model-item>
+      </a-form-model>
+    </a-modal>
   </div>
 </template>
 
@@ -120,17 +142,18 @@
 import VueMarkdown from "vue-markdown";
 import SvgIcon from '@/components/SvgIcon.vue';
 import AceEditor from 'vue2-ace-editor'
-import 'brace/theme/monokai'
 import 'brace/theme/github'
-import 'brace/theme/chrome'
 
 import {
   selectModelDetail,
   getModelCodeFile,
   getCodeFileContent,
-  downloadFile,
-  download
+  downloadByVersion,
+  download,
+  getReadMe,
+  createCodeVersion
 } from '@/api/aiModel'
+import { axiosDownload } from '@/utils/index'
 export default {
   name: 'ModelsDetail',
   components: {
@@ -138,14 +161,21 @@ export default {
     SvgIcon,
     AceEditor
   },
+  props: {
+    activeId: {
+      type: String,
+      default: ""
+    }
+  },
   data() {
     return {
-      activeId: "",
       modelObj: {},
       tagsLsit: [],
       crumbList: [],
       branchVal: 'master',
+      tabsKey: "introduction",
       isShowFileContent: false,
+      confirmLoading: false,
       options: {
         readOnly: true,
         fontSize: '14px',
@@ -154,8 +184,17 @@ export default {
         highlightActiveLine: false,
         // displayIndentGuides: false,
       },
-      fileCode: "function fn() {\n  console.log('xxx')\n}",
+      versionForm: {
+        tagName: "",
+      },
+      rules: {
+        tagName: [
+          { required: true, message: "请填写名称", trigger: "blur" },
+        ],
+      },
+      fileCode: "",
       markdown: "",
+      versionVisible: false,
       columns: [
         { 
           dataIndex: "name", 
@@ -173,59 +212,49 @@ export default {
         {
           dataIndex: 'name',
           align: 'left',
-          key: 'name',
+          key: 'objectName',
           title: '名称'
-        },
-        {
-          dataIndex: 'message',
-          align: 'center',
-          key: 'message',
-          title: '信息'
         },
         { 
           key: 'action',
           title: '操作',
           align: 'center',
+          width: 100,
           scopedSlots: { customRender: 'action' }, 
         },
       ],
       fileData: [],
     };
   },
-  created() {
-    if (this.$route.query) {
-      this.activeId = this.$route.query.modelId;
-      this.init();
-    }
-  },
-  watch: {
-    $route(to, from) {
-      //监听路由是否变化
-      if (to.query.modelId != from.query.modelId) {
-        this.activeId = to.query.modelId;
-        this.init();//重新加载数据
-      }
-    }
-  },
   mounted() {
-    
+    this.init();
+    this.getIntroduction();
   },
 
   methods: {
     init() {
-      console.log('init', this.activeId)
+      this.crumbList = [];
       selectModelDetail({ modelId: this.activeId }).then(res => {
-        console.log(res)
         res = res.data.data
+        let tempArr = res.versions !== null && res.versions.length > 0 ?
+                      res.versions.map(e => {
+                        return {
+                          ...e,
+                          name: e.objectName.split('/')[e.objectName.split('/').length - 2]
+                        }
+                      })
+                      : []
+        res.versions = tempArr
         this.modelObj = res;
         this.tagsLsit = res.labels;
-        this.tagsLsit.unshift(res.modelTask);
-        this.tagsLsit.unshift(res.modelLibrary);
+        if(res.modelTask !== null || res.modelLibrary !== null) {
+          this.tagsLsit.unshift(res.modelTask);
+          this.tagsLsit.unshift(res.modelLibrary);
+        }
         this.crumbList.push({
           name: res.modelName,
           path: ""
         })
-        this.getIntroduction();
       })
     },
 
@@ -234,58 +263,116 @@ export default {
     },
 
     getIntroduction() {
-      getCodeFileContent({
-        projectId: this.modelObj.projectId,
-        filePath: "README.md"
+      getReadMe({
+        modelId: this.activeId
       }).then(res => {
-        this.markdown = res.data.data;
+        console.log(res)
+        this.markdown = res.data.data ? res.data.data : "";
+      })
+    },
+
+    // 新增版本
+    createVersion() {
+      this.versionVisible = true;
+    },
+
+    // 取消新增版本
+    cancelVersion() {
+      this.versionVisible = false;
+      this.versionForm = {
+        tagName: ""
+      }
+    },
+
+    // 确定新增版本
+    handleOk() {
+      this.$refs.versionFormRef.validate((valid) => {
+        if(valid) {
+          this.confirmLoading = true;
+          createCodeVersion({
+            tagName: this.versionForm.tagName,
+            modelId: this.modelObj.id
+          }).then(res => {
+            if(res.data.status === 1) {
+              this.versionVisible = false;
+              this.versionForm.tagName = '';
+              this.$message.success('新增版本成功');
+              this.tabsKey = 'version'
+              this.init();
+            }
+          }).finally(() => {
+            this.confirmLoading = false;
+          })
+        }
       })
     },
 
     tabsChange(key) {
-      console.log(key)
       if(key === 'space') {
+        let filePath = this.crumbList.slice(1).map(e => e.name).join('/')
         getModelCodeFile({
-          projectId: this.modelObj.projectId,
-          filePath: ""
+          modelId: this.modelObj.id,
+          filePath: filePath
         }).then(res => {
-          console.log(res)
           res = res.data.data;
-          this.fileData = res;
+          this.fileData = this.coverFileData(res);
         })
       } else if(key === 'introduction') {
         this.getIntroduction();
       }
     },
 
+    coverFileData(fileData) {
+      return fileData.map(item => {
+        if(item.isDir) {
+          return  {
+            ...item,
+            name: item.objectName.split('/').slice(0, -1).pop()
+          }
+        } else {
+          return {
+            ...item,
+            name: item.objectName.split('/').pop(),
+          }
+        }
+      })
+    },
+
+    joinFileName(arr, name) {
+      arr = arr.map(e => e.name)
+      arr.push(name)
+      arr.shift(arr[0])
+      return arr.join('/')
+    },
+
     fileClick(record) {
-      console.log(record);
-      if(record.type === 'BLOB') {
+      if(!record.isDir) {
         getCodeFileContent({
-          projectId: this.modelObj.projectId,
-          filePath: record.path
+          filePath: record.objectName
         }).then(res => {
-          console.log(res)
           this.isShowFileContent = true;
           this.fileCode = res.data.data;
         })
-      } else if(record.type === 'TREE') {
+      } else if(record.isDir) {
         getModelCodeFile({
-          projectId: this.modelObj.projectId,
-          filePath: record.path
+          modelId: this.modelObj.id,
+          filePath: this.joinFileName(this.crumbList, record.name)
         }).then(res => {
-          this.fileData = res.data.data;
+          this.fileData = this.coverFileData(res.data.data);
           this.crumbList.push(record)
         })
       }
     },
 
     returnFlod(item) {
+      let index = this.crumbList.findIndex(e => e.name === item.name)
+      let tempArr = this.crumbList.slice(1, index + 1).map(e => e.name)
+      let filePath = tempArr.join('/')
       getModelCodeFile({
-        projectId: this.modelObj.projectId,
-        filePath: item.path
+        modelId: this.modelObj.id,
+        filePath: filePath
       }).then(res => {
-        this.fileData = res.data.data;
+        this.fileData = this.coverFileData(res.data.data);;
         let deleteIndex = this.crumbList.findIndex(e => e.name === item.name);
         this.crumbList = this.crumbList.slice(0, deleteIndex + 1)
       }).finally(() => {
@@ -294,16 +381,20 @@ export default {
     },
 
     handleDownLoadFile() {
-      downloadFile({
-        projectId: this.modelObj.projectId,
-        // filePath: 
+      download({
+        modelId: this.modelObj.id,
+      }).then(res => {
+        console.log(res)
+        axiosDownload(res.data, res.headers, this.modelObj.modelName, 'application/zip');
       })
     },
 
-    downLoad(record) {
-      console.log(record)
-      download(record.commit.url).then(res => {
-        console.log(res)
+    downLoadVersion(record) {
+      downloadByVersion({
+        modelId: this.modelObj.id,
+        versionName: record.name
+      }).then(res => {
+        axiosDownload(res.data, res.headers, record.name, 'application/zip');
       })
     }
   },
