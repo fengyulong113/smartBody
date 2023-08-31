@@ -80,3 +80,30 @@ export const getReadMe = (params) => {
   })
 }
 
+// 大模型详情查询
+export const selectBigModelDetail = (params) => {
+  return fetch({
+    url: `${baseIp}/bigModel/selectBigModelDetail`,
+    method: 'get',
+    params
+  })
+}
+
+// 小模型详情查询
+export const selectSmallModelDetail = (params) => {
+  return fetch({
+    url: `${baseIp}/smallModel/selectSmallModelDetail`,
+    method: 'get',
+    params
+  })
+}
+
+// 智能体详情
+export const getSmartBodyDetail = (params) => {
+  return fetch({
+    url: `${baseIp}/smartAgent/selectSmartAgentDetail`,
+    method: 'get',
+    params
+  })
+}
+

@@ -8,13 +8,13 @@ export const getSmartBody = (data) => {
   })
 }
 
-export const getSmartBodyDetail = (params) => {
-  return fetch({
-    url: `${baseIp}/smartAgent/selectSmartAgentDetail`,
-    method: 'get',
-    params
-  })
-}
+// export const getSmartBodyDetail = (params) => {
+//   return fetch({
+//     url: `${baseIp}/smartAgent/selectSmartAgentDetail`,
+//     method: 'get',
+//     params
+//   })
+// }
 
 export const addSmartBody = (data) => {
   return fetch({

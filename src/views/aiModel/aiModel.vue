@@ -22,7 +22,7 @@
       </div>
       <a-divider />
       <div class="aiModelContent">
-
+        <!-- 左侧标签 -->
         <div class="aiModelLeft">
           <a-tabs v-if="categotyList.length > 0" :default-active-key="categotyList[0].id" @change="tabsChange">
             
@@ -78,6 +78,7 @@
           
         </div>
 
+        <!-- 模型列表 -->
         <div class="aiModelList">
 
           <div class="aiModelListHeader">
@@ -130,7 +131,7 @@
                   </div>
 
                   <div class="aiModelListWapperCardRightDetail">
-                    <div v-if="item.isOnlineUse !== '否'">
+                    <div v-if="item.isOnlineUse !== '否' && item.isOnlineUse !== null">
                       <SvgIcon icon-class="dot" />
                       <span class="aiModelListWapperCardRightDetailTrain">在线体验</span>
                     </div>

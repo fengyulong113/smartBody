@@ -1,5 +1,9 @@
 $themeColor: #2b32d8;
 
+.color-grey {
+  color: rgba(0, 0, 0, 0.45);
+}
+
 /deep/ .ant-input-affix-wrapper .ant-input {
   font-size: 13px;
 }

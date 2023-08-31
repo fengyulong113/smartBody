@@ -28,13 +28,13 @@ export const selectByConditions = (data) => {
 }
 
 // 小模型详情查询
-export const selectSmallModelDetail = (params) => {
-  return fetch({
-    url: `${baseIp}/smallModel/selectSmallModelDetail`,
-    method: 'get',
-    params
-  })
-}
+// export const selectSmallModelDetail = (params) => {
+//   return fetch({
+//     url: `${baseIp}/smallModel/selectSmallModelDetail`,
+//     method: 'get',
+//     params
+//   })
+// }
 
 // 小模型更新
 export const updateByModelId = (data) => {

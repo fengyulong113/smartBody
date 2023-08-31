@@ -18,14 +18,14 @@ export const insertBigModel = (data) => {
   })
 }
 
-// 大模型详情查询
-export const selectBigModelDetail = (params) => {
-  return fetch({
-    url: `${baseIp}/bigModel/selectBigModelDetail`,
-    method: 'get',
-    params
-  })
-}
+// // 大模型详情查询
+// export const selectBigModelDetail = (params) => {
+//   return fetch({
+//     url: `${baseIp}/bigModel/selectBigModelDetail`,
+//     method: 'get',
+//     params
+//   })
+// }
 
 // 大模型列表查询
 export const selectByConditions = (data) => {

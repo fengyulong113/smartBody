@@ -5,16 +5,16 @@
         <div class="aiModelDetailHdTitle">{{ modelObj.modelName }}</div>
         <div class="aiModelDetailHdSubtitle">
           <div class="modelDesc">{{ modelObj.modelDesc }}</div>
-          <a-divider type="vertical" />
+          <a-divider v-show="modelObj.modelDesc" type="vertical" />
           <div>{{ modelObj.optUser }}</div>
-          <a-divider type="vertical" />
+          <a-divider v-show="modelObj.optUser" type="vertical" />
           <div>{{ modelObj.modelCreateTime }}</div>
         </div>
         <div class="aiModelDetailHdTags">
           <a-radio-button
             v-for="(item, i) in tagsLsit" 
             :key="i">
-            {{ item }}
+            {{ item.labelName }}
           </a-radio-button>
         </div>
       </div>
@@ -107,6 +107,85 @@
               </span>
             </a-table>
           </a-tab-pane>
+
+          <a-tab-pane key="detail" tab="模型详情">
+            <!-- 大模型详情 -->
+            <a-form-model
+              v-if="modelObj.modelType === '大模型'"
+              :model="modelDetailForm"
+              :label-col="{ span: 4, offset: 1 }"
+              :wrapper-col="{ span: 15 }"
+              labelAlign="left"
+            >
+              <a-form-model-item label="类型">
+                <div class="color-grey">{{ modelDetailForm.bigModelType }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="支持的tokens数">
+                <div class="color-grey">{{ modelDetailForm.bigModelToken }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="接口">
+                <div class="color-grey">{{ modelDetailForm.serviceInterface }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="支持的领域">
+                <div class="color-grey">{{ modelDetailForm.bigModelArea }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="描述">
+                <div class="color-grey">{{ modelDetailForm.bigModelDesc }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="备注">
+                <div class="color-grey">{{ modelDetailForm.smallModelRemark }}</div>
+              </a-form-model-item>
+              
+            </a-form-model>
+
+            <!-- 小模型详情 -->
+            <a-form-model
+              v-else-if="modelObj.modelType === '小模型'"
+              :model="modelDetailForm"
+              :label-col="{ span: 3, offset: 1 }"
+              :wrapper-col="{ span: 10 }"
+              labelAlign="left"
+            >
+              <a-form-model-item label="版本">
+                <div class="color-grey">{{ modelDetailForm.modelVersion }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="格式">
+                <div class="color-grey">{{ modelDetailForm.modelFormat }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="描述">
+                <div class="color-grey">{{ modelDetailForm.modelDesc }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="备注">
+                <div class="color-grey">{{ modelDetailForm.smallModelRemark }}</div>
+              </a-form-model-item>
+              
+            </a-form-model>
+
+            <!-- 智能体详情 -->
+            <a-form-model
+              v-else-if="modelObj.modelType === '智能体'"
+              :model="modelDetailForm"
+              :label-col="{ span: 3, offset: 1 }"
+              :wrapper-col="{ span: 15, offset: 0 }"
+              labelAlign="left"
+            >
+              <a-form-model-item label="智能体类型">
+                <div class="color-grey">{{ modelDetailForm.smartType }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="想定场景">
+                <div class="color-grey">{{ modelDetailForm.scenario }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="作战方案">
+                <div class="color-grey">{{ modelDetailForm.battlePlan }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="作战方">
+                <div class="color-grey">{{ modelDetailForm.battleOrg }}</div>
+              </a-form-model-item>
+              <a-form-model-item label="配置文件">
+                <div class="color-grey">{{ modelDetailForm.configFile }}</div>
+              </a-form-model-item>
+            </a-form-model>
+          </a-tab-pane>
         </a-tabs>
       </div>
       <div class="aiModelDetailBdAsideWrap"></div>
@@ -151,7 +230,10 @@ import {
   downloadByVersion,
   download,
   getReadMe,
-  createCodeVersion
+  createCodeVersion,
+  selectBigModelDetail,
+  selectSmallModelDetail,
+  getSmartBodyDetail
 } from '@/api/aiModel'
 import { axiosDownload } from '@/utils/index'
 export default {
@@ -195,6 +277,8 @@ export default {
       fileCode: "",
       markdown: "",
       versionVisible: false,
+      fileData: [],
+      modelDetailForm: {},
       columns: [
         { 
           dataIndex: "name", 
@@ -223,7 +307,6 @@ export default {
           scopedSlots: { customRender: 'action' }, 
         },
       ],
-      fileData: [],
     };
   },
   mounted() {
@@ -248,8 +331,8 @@ export default {
         this.modelObj = res;
         this.tagsLsit = res.labels;
         if(res.modelTask !== null || res.modelLibrary !== null) {
-          this.tagsLsit.unshift(res.modelTask);
-          this.tagsLsit.unshift(res.modelLibrary);
+          this.tagsLsit.unshift({ labelName: res.modelTask });
+          this.tagsLsit.unshift({ labelName: res.modelLibrary });
         }
         this.crumbList.push({
           name: res.modelName,
@@ -258,10 +341,7 @@ export default {
       })
     },
 
-    goHome() {
-      this.$router.push({ path: '/aiModel' });
-    },
-
+    // 获取模型介绍
     getIntroduction() {
       getReadMe({
         modelId: this.activeId
@@ -269,6 +349,30 @@ export default {
         console.log(res)
         this.markdown = res.data.data ? res.data.data : "";
       })
+    },
+
+    // 获取模型详情
+    getModelDetail(type) {
+      this.modelDetailForm = {};
+      switch (type) {
+        case '大模型':
+          selectBigModelDetail({ modelId: this.modelObj.id }).then(res => {
+            this.modelDetailForm = res.data.data;
+          })
+          break;
+        case '小模型':
+          selectSmallModelDetail({ modelId: this.modelObj.id }).then(res => {
+            this.modelDetailForm = res.data.data;
+          })
+          break;
+        case '智能体':
+          getSmartBodyDetail({ modelId: this.modelObj.id }).then(res => {
+            this.modelDetailForm = res.data.data;
+          })
+          break;
+        default:
+          break;
+      }
     },
 
     // 新增版本
@@ -319,6 +423,8 @@ export default {
         })
       } else if(key === 'introduction') {
         this.getIntroduction();
+      } else if(key === 'detail') {
+        this.getModelDetail(this.modelObj.modelType)
       }
     },
 

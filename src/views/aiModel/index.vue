@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import AiModel from './aiModel.vue';
+import AiModel from './aiModel.vue'
 import ModelsDetail from './modelsDetail.vue';
 import CreateModel from './createModel.vue'
 export default {

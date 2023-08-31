@@ -530,7 +530,7 @@ export default {
     }
     .aiCreateModelBdMetaData {
       margin-bottom: 30px;
-      margin-top: 10px;
+      margin-top: 30px;
       .aiCreateModelBdMetaDataMain {
         border: 1px solid #e5e7eb;
         border-radius: 5px;
